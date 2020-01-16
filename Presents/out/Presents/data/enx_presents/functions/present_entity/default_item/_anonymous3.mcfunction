@@ -1,0 +1,16 @@
+scoreboard players set @s[nbt={Item:{id:"minecraft:white_dye"}}] enx_psnt_dye 0
+scoreboard players set @s[nbt={Item:{id:"minecraft:orange_dye"}}] enx_psnt_dye 1
+scoreboard players set @s[nbt={Item:{id:"minecraft:magenta_dye"}}] enx_psnt_dye 2
+scoreboard players set @s[nbt={Item:{id:"minecraft:light_blue_dye"}}] enx_psnt_dye 3
+scoreboard players set @s[nbt={Item:{id:"minecraft:yellow_dye"}}] enx_psnt_dye 4
+scoreboard players set @s[nbt={Item:{id:"minecraft:lime_dye"}}] enx_psnt_dye 5
+scoreboard players set @s[nbt={Item:{id:"minecraft:pink_dye"}}] enx_psnt_dye 6
+scoreboard players set @s[nbt={Item:{id:"minecraft:gray_dye"}}] enx_psnt_dye 7
+scoreboard players set @s[nbt={Item:{id:"minecraft:light_gray_dye"}}] enx_psnt_dye 8
+scoreboard players set @s[nbt={Item:{id:"minecraft:cyan_dye"}}] enx_psnt_dye 9
+scoreboard players set @s[nbt={Item:{id:"minecraft:purple_dye"}}] enx_psnt_dye 10
+scoreboard players set @s[nbt={Item:{id:"minecraft:blue_dye"}}] enx_psnt_dye 11
+scoreboard players set @s[nbt={Item:{id:"minecraft:brown_dye"}}] enx_psnt_dye 12
+scoreboard players set @s[nbt={Item:{id:"minecraft:green_dye"}}] enx_psnt_dye 13
+scoreboard players set @s[nbt={Item:{id:"minecraft:red_dye"}}] enx_psnt_dye 14
+scoreboard players set @s[nbt={Item:{id:"minecraft:black_dye"}}] enx_psnt_dye 15

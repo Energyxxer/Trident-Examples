@@ -4,3 +4,13 @@ $ITEM_TAG: {
         RibbonColor: Int
     }
 }
+
+$STORAGE: {
+    "enx_presents:data": {
+        ReleaseItem: $ITEM_TAG,
+        CaptureItem: $ITEM_TAG,
+        PresentItem: $ITEM_TAG,
+        RandomRotation: {Head:[Float]},
+        player: $ENTITY_MINECRAFT_PLAYER
+    }
+}
