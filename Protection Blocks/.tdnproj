@@ -2,7 +2,6 @@
   "default-namespace": "enx_prot",
   "language-level": 2,
   "datapack-output": "$PROJECT_DIR$\\out\\Protection Blocks",
-  "resources-output": "$PROJECT_DIR$\\out\\Protection Blocks-resources.zip",
   "export-comments": false,
   "strict-nbt": true,
   "strict-text-components": true,
