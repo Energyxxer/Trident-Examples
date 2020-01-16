@@ -1,0 +1,37 @@
+@on compile
+@require enx_note:noteblock
+
+define objective enx_note_slot
+define objective enx_note_slotpre
+define objective enx_note_op
+
+define entity default player {
+    ticking function {
+        set @s->enx_note_slot = @s.SelectedItemSlot
+        set @s->enx_note_op = @s->enx_note_slotpre
+        set @s->enx_note_op -= @s->enx_note_slot
+        set @s[scores={enx_note_op=5..}]->enx_note_op -= 9
+        set @s[scores={enx_note_op=..-5}]->enx_note_op += 9
+        unless score @s enx_note_op matches 0 tag @s add note_display_target
+        do if(!FAST_SCROLLING) {
+            set @s[scores={enx_note_op=2..}]->enx_note_op = 1
+            set @s[scores={enx_note_op=..-2}]->enx_note_op = -1
+        }
+        set CHANGE->enx_note = @s->enx_note_op
+        unless score CHANGE enx_note matches 0 as @e[type=$noteblock,tag=ui_open,distance=..${(real)USE_DISTANCE},sort=furthest] function change {
+            set @s[tag=change_note]->enx_note += CHANGE->enx_note
+            set @s[tag=!change_note]->enx_note_instr += CHANGE->enx_note
+            set @s[scores={enx_note=${NOTE_RANGE.max}..}]->enx_note = ${NOTE_RANGE.min}
+            set @s[scores={enx_note_instr=${NoteData.Instruments.length}..}]->enx_note_instr = 0
+            set @s[scores={enx_note=..${NOTE_RANGE.min-1}}]->enx_note = ${NOTE_RANGE.max-1}
+            set @s[scores={enx_note_instr=..-1}]->enx_note_instr = ${NoteData.Instruments.length-1}
+            if entity @s[tag=change_note] set DISPLAY->enx_note = @s->enx_note
+            if entity @s[tag=change_note] function enx_note:display/note
+            if entity @s[tag=!change_note] set DISPLAY->enx_note_instr = @s->enx_note_instr
+            if entity @s[tag=!change_note] function enx_note:display/instrument
+            tag @s add play
+        }
+        tag @s remove note_display_target
+        set @s->enx_note_slotpre = @s->enx_note_slot
+    }
+}

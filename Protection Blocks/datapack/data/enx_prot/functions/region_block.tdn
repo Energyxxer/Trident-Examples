@@ -1,0 +1,217 @@
+@on compile
+@require enx_prot:config
+@require enx_util:components
+
+define objective enx_prot_place minecraft.used:minecraft.armor_stand
+define objective enx_prot_opdropp minecraft.custom:minecraft.inspect_dropper
+define objective enx_prot_ui trigger
+define objective region trigger
+define objective region_remove trigger
+
+var defaultDropper = block<dropper[facing=up]{CustomName:"\"Opening Region GUI...\"",LootTable:"minecraft:empty"}>
+
+define entity component view_regions
+
+define entity region_block minecraft:armor_stand implements RegionIdSystem.id_holder, on_fire {
+    default nbt {
+        ArmorItems:[{id:"minecraft:egg",Count:1b,tag:{RegionWhitelist:[-1]}},{},{},{id:"minecraft:player_head",Count:1b}],
+        Pose:{Head:[0.0f,0.0f,0.0f]},
+        NoGravity:1b,
+        Marker:1b,
+        Invulnerable:1b,
+        Invisible:1b,
+        Small:1b
+    }
+    
+    var summonSetup = function() {
+        using summon $region_block ~ ~.275 ~ with enx_prot_new align xyz positioned ~.5 ~ ~.5 {
+            setblock ~ ~ ~ $defaultDropper
+            set @s->enx_prot_tier = NEW->enx_prot_tier
+            set @s.ArmorItems[0].tag.RegionWhitelist[0] = NEW_OWNER->enx_prot_global
+            scoreboard players reset NEW enx_prot_tier
+            scoreboard players reset NEW_OWNER enx_prot_global
+            for(tier in Config.tiers) {
+                if score @s enx_prot_tier matches ${tier.index} set @s.ArmorItems[3].tag = ${tier.skull}
+            }
+        }
+    }
+    
+    ticking function {
+        unless block ~ ~ ~ dropper function check_break {
+            set @s->${PlayerIdSystem.objectives.link} = @s.ArmorItems[0].tag.RegionWhitelist[0]
+            eval PlayerIdSystem.usingParent(function(owner) {
+                unless entity $owner[distance=..6] setblock ~ ~ ~ $defaultDropper
+                unless entity $owner[distance=..6] if entity @a[distance=..6] tellraw $owner[type=player] [{"text":"Warning: ","color":"gold"},{"selector":"@a[distance=..6]","color":"yellow"}," tried to destroy your region block at ",{"nbt":"x","block":"~ ~ ~"}," ",{"nbt":"y","block":"~ ~ ~"}," ",{"nbt":"z","block":"~ ~ ~"}," "]
+                if entity $owner[distance=..6] function break {
+                    for(tier in Config.tiers) {
+                        if score @s enx_prot_tier matches ${tier.index} as $owner at @s function ${tier.giveFunction}
+                    }
+                    kill @s
+                }
+            })
+            kill @e[type=item,distance=..6,nbt={Age:0s,PickupDelay:10s,Item:{id:"minecraft:dropper",tag:{display:{Name:"{\"text\":\"Opening Region GUI...\"}"}}}},limit=1]
+        }
+        if block ~ ~ ~ dropper if data block ~ ~ ~ Items function {
+            if data block ~ ~ ~ Items[0] function eject_items {
+                set enx_prot:data~DropperItems = (~ ~ ~).Items
+                using summon minecraft:chest_minecart{CustomName:"\"$$REGION_DROPPER_ITEMS$$\""} with region_dropper_eject {
+                    set @s.Items = enx_prot:data~DropperItems
+                    kill @s
+                }
+            }
+            setblock ~ ~ ~ bedrock
+            setblock ~ ~ ~ $defaultDropper
+            set @a[scores={enx_prot_opdropp=1..},distance=..6]->enx_prot_ui = 1
+        }
+    }
+    
+    function summon {
+        eval this.summonSetup()
+    }
+    
+    function in_update_region {
+        set IN_REGION_ID->enx_prot_in_rid = @s->${RegionIdSystem.objectives.id}
+        for(tier in Config.tiers) {
+            var off = coordinates<~ ~ ~>.deriveMagnitude(-tier.size/2)
+            var paddedOff = coordinates<~ ~ ~>.deriveMagnitude(-(tier.size/2 + 4))
+            var paddedWidth = tier.size + 8
+            if score @s enx_prot_tier matches ${tier.index} function {
+                positioned $paddedOff as @a[dx=${(real)paddedWidth-1},dy=${(real)paddedWidth-1},dz=${(real)paddedWidth-1}] set @s->enx_prot_in_rid = IN_REGION_ID->enx_prot_in_rid
+                positioned $paddedOff kill @e[type=tnt,dx=${(real)paddedWidth-1},dy=${(real)paddedWidth-1},dz=${(real)paddedWidth-1},nbt={Fuse:1s}]
+            }
+        }
+    }
+    
+    ticking function outline {
+        for(tier in Config.tiers) {
+            if score @s enx_prot_tier matches ${tier.index} align y function {
+                var width = (real) tier.size
+                var halfwidth = width/2
+                var particleMultiplier = 0.25
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(-halfwidth, Axis.X).deriveMagnitude(-halfwidth, Axis.Y)} 0 0 ${width*particleMultiplier} 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(-halfwidth, Axis.X).deriveMagnitude(halfwidth, Axis.Y)} 0 0 ${width*particleMultiplier} 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(halfwidth, Axis.X).deriveMagnitude(-halfwidth, Axis.Y)} 0 0 ${width*particleMultiplier} 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(halfwidth, Axis.X).deriveMagnitude(halfwidth, Axis.Y)} 0 0 ${width*particleMultiplier} 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(-halfwidth, Axis.Z).deriveMagnitude(-halfwidth, Axis.Y)} ${width*particleMultiplier} 0 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(-halfwidth, Axis.Z).deriveMagnitude(halfwidth, Axis.Y)} ${width*particleMultiplier} 0 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(halfwidth, Axis.Z).deriveMagnitude(-halfwidth, Axis.Y)} ${width*particleMultiplier} 0 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(halfwidth, Axis.Z).deriveMagnitude(halfwidth, Axis.Y)} ${width*particleMultiplier} 0 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(-halfwidth, Axis.X).deriveMagnitude(-halfwidth, Axis.Z)} 0 ${width*particleMultiplier} 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(-halfwidth, Axis.X).deriveMagnitude(halfwidth, Axis.Z)} 0 ${width*particleMultiplier} 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(halfwidth, Axis.X).deriveMagnitude(-halfwidth, Axis.Z)} 0 ${width*particleMultiplier} 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+                particle end_rod ${coordinates<~ ~ ~>.deriveMagnitude(halfwidth, Axis.X).deriveMagnitude(halfwidth, Axis.Z)} 0 ${width*particleMultiplier} 0 0 ${(int)(width*particleMultiplier)} force @a[component=view_regions]
+            }
+        }
+    }
+    
+    function check_permissions {
+        set PERMISSION_GRANTED->enx_prot_global = 0
+        set IS_OWNER->enx_prot_global = -1
+        set enx_prot:data~Whitelist = @s.ArmorItems[0].tag.RegionWhitelist
+        
+        if data storage enx_prot:data Whitelist[0] function {
+            set PID_CHECK->enx_prot_global = enx_prot:data~Whitelist[0]
+            data remove storage enx_prot:data Whitelist[0]
+            if score PID_CHECK enx_prot_global = PERMISSION_CHECK enx_prot_global set PERMISSION_GRANTED->enx_prot_global = 1
+            if score IS_OWNER enx_prot_global matches -1 if score PERMISSION_GRANTED enx_prot_global matches 1 set IS_OWNER->enx_prot_global = 1
+            if score IS_OWNER enx_prot_global matches -1 set IS_OWNER->enx_prot_global = 0
+            if data storage enx_prot:data Whitelist[0] unless score PID_CHECK enx_prot_global = PERMISSION_CHECK enx_prot_global function /
+        }
+        if score IS_OWNER enx_prot_global matches -1 set IS_OWNER->enx_prot_global = 0
+    }
+}
+
+define function default_player/in_update_region {
+    if score @s enx_prot_pre_rid matches 0.. if score @s enx_prot_in_rid matches -1 function {
+        tellraw @s {"text":"[You are now leaving a protected area]","color":"gray"}
+        gamemode survival @s[gamemode=adventure]
+    }
+    if score @s enx_prot_in_rid matches 0.. unless score @s enx_prot_in_rid = @s enx_prot_pre_rid function {
+        do if(Config.show_region_switch_messages)
+            if score @s enx_prot_pre_rid matches 0.. tellraw @s {"text":"[You are now switching protected areas]","color":"gray"}
+        unless score @s enx_prot_pre_rid matches 0.. tellraw @s {"text":"[You are now entering a protected area]","color":"gray"}
+        set @s->${RegionIdSystem.objectives.link} = @s->enx_prot_in_rid
+        eval RegionIdSystem.usingParent(function(inRegion) {
+            set PERMISSION_CHECK->enx_prot_global = @s->${PlayerIdSystem.objectives.id}
+            as $inRegion function ${region_block.check_permissions}
+            if score PERMISSION_GRANTED enx_prot_global matches 1 gamemode survival @s[gamemode=adventure]
+            if score PERMISSION_GRANTED enx_prot_global matches 0 gamemode adventure @s[gamemode=survival]
+        })
+    }
+    set @s->enx_prot_pre_rid = @s->enx_prot_in_rid
+}
+
+define function in_region_update {
+    @tag tick
+    component @a add PlayerIdSystem.id_holder
+    as @a set @s->enx_prot_in_rid = -1
+    as @e[type=$region_block] at @s function ${region_block.in_update_region}
+    as @a function /../default_player/in_update_region
+}
+
+define entity place_region minecraft:armor_stand {
+    default nbt {Invisible:1b,Marker:1b,Small:1b}
+    
+    ticking function setup {
+        set NEW->enx_prot_tier = @s.ArmorItems[0].tag.PlaceRegionTier
+        set NEW_OWNER->enx_prot_global = @p[scores={enx_prot_place=1..},distance=..8]->${PlayerIdSystem.objectives.id}
+        
+        set OVERLAPPING->enx_prot_global = 0
+        for(spawnTier in Config.tiers) {
+            if score NEW enx_prot_tier matches ${spawnTier.index} function {
+                for(overlapTier in Config.tiers) {
+                    var sizeSum = (real) (spawnTier.size + overlapTier.size)
+                    var off = coordinates<~ ~ ~>.deriveMagnitude(-sizeSum/2)
+                    positioned $off if entity @e[type=$region_block,scores={enx_prot_tier=${overlapTier.index}},dx=${sizeSum-1},dy=${sizeSum-1},dz=${sizeSum-1}] set OVERLAPPING->enx_prot_global = 1
+                }
+            }
+        }
+        
+        unless score OVERLAPPING enx_prot_global matches 1 function ${region_block.summon}
+        if score OVERLAPPING enx_prot_global matches 1 function {
+            for(tier in Config.tiers) {
+                if score NEW enx_prot_tier matches ${tier.index} as @p[scores={enx_prot_place=1..},distance=..8] function ${tier.giveFunction}
+            }
+            title @p[scores={enx_prot_place=1..},distance=..8] actionbar [{"text":"Overlapping regions are not allowed!","color":"red"}]
+        }
+        kill @s
+    }
+}
+
+for(tier in Config.tiers) {
+    define function ${(resource) ("/give/" + tier.index)} {
+        eval tier.spawnItem = item<armor_stand{
+            Enchantments:[{}],
+            display:{
+                Name:${text_component<{
+                    "text":${"Region Block (T" + tier.index + ")"},
+                    "color":"gold",
+                    "bold":true,
+                    "italic":false
+                }>},
+                Lore:[
+                    ${text_component<[
+                        {
+                            "text":"Size: ",
+                            "color":"dark_aqua",
+                            "bold":true,
+                            "italic":false
+                        },
+                        {
+                            "text":${"" + tier.size + "x" + tier.size + "x" + tier.size},
+                            "color":"white",
+                            "bold":false,
+                            "italic":false
+                        }
+                    ]>}
+                ]
+            },
+            EntityTag:${place_region.getSettingNBT().merge(nbt<{
+                ArmorItems:[{id:"minecraft:egg",Count:1b,tag:{PlaceRegionTier:${new tag_int(tier.index)}}}]
+            }>)}}>
+        give @s ${tier.spawnItem}
+    }
+    eval tier.giveFunction = (resource) ("/give/" + tier.index)
+}

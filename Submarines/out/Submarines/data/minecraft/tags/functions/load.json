@@ -1,0 +1,8 @@
+{
+  "values": [
+    "enx_util:components/invisible/refresh",
+    "enx_sub:submarine/propeller_anim",
+    "enx_sub:submarine/global_init",
+    "enx_sub:trident/create_objectives"
+  ]
+}

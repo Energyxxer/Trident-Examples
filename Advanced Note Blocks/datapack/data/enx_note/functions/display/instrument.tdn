@@ -1,0 +1,6 @@
+var i = 0
+for(instrument in NoteData.Instruments) {
+    if score DISPLAY enx_note_instr matches $i title @a[tag=note_display_target] actionbar {"text":${"Set to: " + instrument.name},"color":"light_purple"}
+    eval i++
+}
+tag @a remove note_display_target

@@ -1,0 +1,1 @@
+title @s[scores={enx_sub_charge=60}] actionbar [{"text":"HOLD ","color":"gold"},{"keybind":"key.back"},{"text":": [ ","color":"gray"},"||||||||||||||||||||",{"text":" SONAR ","color":"gray"},"|||||||||||||||||||||||||||||||||||||||",{"text":"","color":"white"},{"text":" TORPEDO ","color":"red"},{"text":"","color":"white"},{"text":"]          ","color":"gray"}]

@@ -1,0 +1,23 @@
+@on compile
+@require enx_note:common
+@require enx_note:buttons
+
+var ButtonActions = {
+    Main:0
+}
+
+eval function() {
+    define local entity component note_button_main {
+        ticking if entity @s[tag=interact] function interact {
+            eval IdSystem.usingParent(function(parent) {
+                if entity $parent[tag=change_note] tag @s add was_note
+                if entity @s[tag=was_note] tag $parent remove change_note
+                if entity @s[tag=was_note] set @s.CustomName = ${new tag_string((string)TC_INSTRUMENT)}
+                unless entity @s[tag=was_note] tag $parent add change_note
+                unless entity @s[tag=was_note] set @s.CustomName = ${new tag_string((string)TC_NOTE)}
+                tag @s remove was_note
+            })
+        }
+    }
+    eval ButtonActions.Main = note_button_main
+}()

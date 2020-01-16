@@ -1,0 +1,47 @@
+@on compile
+@require enx_ptng:main
+
+var providers = []
+
+var nextChar = Integer.parseInt("FC00",16)
+
+for(motive in Motives) {
+    #Character: Shows the painting over 4 lines of text, located on the last line (extends up)
+    eval motive.character = Character.fromCodePoint(nextChar)
+    #Padding Character: The width of the character, but doesn't render it
+    eval motive.paddingCharacter = Character.fromCodePoint(nextChar+Motives.length)
+    #Top Character: Shows the painting over 4 lines of text, located on the first line (extends down)
+    eval motive.topCharacter = Character.fromCodePoint(nextChar+Motives.length*2)
+    
+    eval providers.add({
+        "type": "bitmap",
+        "file": motive.id.namespace + ":painting/" + motive.id.body + ".png",
+        "height": 32,
+        "ascent": 32,
+        "chars": [
+            motive.character
+        ]
+    })
+    eval providers.add({
+        "type": "bitmap",
+        "file": motive.id.namespace + ":painting/" + motive.id.body + ".png",
+        "height": 32,
+        "ascent": -512,
+        "chars": [
+            motive.paddingCharacter
+        ]
+    })
+    eval providers.add({
+        "type": "bitmap",
+        "file": motive.id.namespace + ":painting/" + motive.id.body + ".png",
+        "height": 32,
+        "ascent": 0,
+        "chars": [
+            motive.topCharacter
+        ]
+    })
+    
+    eval nextChar++
+}
+
+eval File.out.writeResource("assets/minecraft/font/default.json",JSON.stringify({"providers":providers}))

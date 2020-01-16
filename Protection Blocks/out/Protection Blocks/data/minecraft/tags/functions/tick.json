@@ -1,0 +1,7 @@
+{
+  "values": [
+    "enx_util:trident_tick",
+    "enx_prot:region_block/in_region_update",
+    "enx_prot:trident_tick"
+  ]
+}

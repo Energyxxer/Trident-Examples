@@ -1,0 +1,8 @@
+{
+  "predicate": {
+    "fluid": {
+      "tag": "minecraft:water"
+    }
+  },
+  "condition": "minecraft:location_check"
+}

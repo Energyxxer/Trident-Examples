@@ -1,0 +1,90 @@
+@on compile
+@require trident-util:type_checking
+@language_level 2
+
+var IdSystemBuilder = {
+    idSystems: [],
+    create: function(prefix, objectives) {
+        eval assertType(objectives, "dictionary")
+        eval assertType(objectives.id, "string")
+        eval assertType(objectives.link, "string")
+        
+        define objective ${objectives.id}
+        define objective ${objectives.link}
+        
+        var obj = {
+            objectives: objectives
+        }
+        
+        define entity component ${prefix + "id_holder"} {
+            var __insert = obj.id_holder = this
+            
+            ticking unless score @s ${obj.objectives.id} isset function set_id {
+                set CURRENT->${obj.objectives.id} += 1
+                set @s->${obj.objectives.id} = CURRENT->${obj.objectives.id}
+            }
+        }
+        define entity component ${prefix + "unlinked"} {
+            var __insert = obj.unlinked = this
+        }
+        define entity component ${prefix + "link_holder"} implements obj.unlinked {
+            var __insert = obj.link_holder = this
+            
+            function set_link {
+                set @s->${obj.objectives.link} = PARENT->${obj.objectives.link}
+                component @s remove obj.unlinked
+            }
+        }
+        
+        define entity component ${prefix + "kill_on_link_broken"} implements obj.link_holder {
+            var __insert = obj.kill_on_link_broken = this
+            
+            ticking if score @s ${obj.objectives.link} isset function {
+                if entity @s[component=obj.unlinked] kill @s
+                eval obj.usingParent(function(parent) {
+                    unless entity $parent kill @s
+                })
+            }
+        }
+        define entity component ${prefix + "datakill_on_link_broken"} implements obj.link_holder {
+            var __insert = obj.datakill_on_link_broken = this
+            ticking if score @s ${obj.objectives.link} isset function {
+                if entity @s[component=obj.unlinked] data merge entity @s {Health:0.0f,DeathTime:19s}
+                eval obj.usingParent(function(parent) {
+                    unless entity $parent data merge entity @s {Health:0.0f,DeathTime:19s}
+                })
+            }
+        }
+        
+        eval obj.prepareLink = function() {
+            set PARENT->${obj.objectives.link} = @s->${obj.objectives.id}
+        }
+        
+        eval obj.usingParent = function(usingBlock) {
+            set SEARCH->${obj.objectives.link} = @s->${obj.objectives.link}
+            
+            using tag link_return @e[type=${obj.id_holder}] if score @s ${obj.objectives.id} = SEARCH ${obj.objectives.link} {
+                eval usingBlock(entity<@e[type=${obj.id_holder},tag=link_return,limit=1]>)
+            }
+        }
+        
+        eval obj.usingSiblings = function(usingBlock) {
+            set SEARCH->${obj.objectives.link} = @s->${obj.objectives.link}
+            
+            using tag link_return @e[type=${obj.link_holder}] if score @s ${obj.objectives.link} = SEARCH ${obj.objectives.link} {
+                eval usingBlock(entity<@e[type=${obj.link_holder},tag=link_return]>)
+            }
+        }
+        
+        eval obj.usingChildren = function(usingBlock) {
+            set SEARCH->${obj.objectives.link} = @s->${obj.objectives.id}
+            
+            using tag link_return @e[type=${obj.link_holder}] if score @s ${obj.objectives.link} = SEARCH ${obj.objectives.link} {
+                eval usingBlock(entity<@e[type=${obj.link_holder},tag=link_return]>)
+            }
+        }
+        
+        eval IdSystemBuilder.idSystems.add(obj)
+        return obj
+    }
+}

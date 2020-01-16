@@ -1,0 +1,184 @@
+@on compile
+@require enx_presents:present_item
+@require enx_util:id_system
+@require enx_util:components
+
+define objective enx_psnt_global
+define objective enx_psnt_c_index
+define objective enx_psnt_dye
+define objective enx_psnt_op
+
+var IdSystem = IdSystemBuilder.create(
+    "enx_psnt_",
+    {
+        id: "enx_psnt_id",
+        link: "enx_psnt_link"
+    }
+)
+
+define entity present_hitbox minecraft:slime implements invisible, IdSystem.datakill_on_link_broken {
+    default name "Present Hitbox"
+    default nbt {
+        ActiveEffects:[{Id:11b,Duration:${new tag_int(Integer.MAX_VALUE)},Amplifier:9b,ShowParticles:0b}],
+        Silent:1b,
+        DeathLootTable:"minecraft:empty",
+        PersistenceRequired:1b,
+        NoAI:1b
+    }
+}
+
+define entity present_ribbon minecraft:armor_stand implements IdSystem.kill_on_link_broken {
+    default name "Present Ribbon"
+    default nbt {Invisible:1b,Marker:1b,ArmorItems:[{},{},{},${item<minecraft:leather_boots#20>}]}
+}
+
+
+define entity component present_closed {
+    
+    ticking unless entity @s[nbt={Passengers:[${present_hitbox.getMatchingNBT().merge(nbt<{HurtTime:0s}>)}]}] function open {
+        set enx_presents:data~ReleaseItem = @s.ArmorItems[0]
+        using summon item{Item:{id:"minecraft:stone",Count:1b}} ~ ~ ~ with replacement_present {
+            set @s.Item = enx_presents:data~ReleaseItem
+        }
+        summon item{Item:{id:"minecraft:paper",Count:1b}}
+        playsound presents:present_unwrap neutral @a ~ ~ ~ 0.4 1.0 0.0
+        kill @s
+    }
+}
+
+define entity present_box minecraft:armor_stand implements IdSystem.id_holder {
+    default name "Present Box"
+    default nbt {Invisible:1b,Marker:1b,ArmorItems:[{},{},{},${item<minecraft:leather_boots#19>}]}
+    
+    default passengers [
+        $present_ribbon,
+        $present_hitbox
+    ]
+    
+    var summon_setup = function() {
+        using summon $present_box with new_present {
+            set @s.ArmorItems[3].tag.display.color = BOX_COLOR->enx_psnt_global
+            set @s.ArmorItems[1] = enx_presents:data~PresentItem
+            set @s.Pose = enx_presents:data~RandomRotation
+            function ${IdSystem.id_holder.set_id}
+            eval IdSystem.prepareLink()
+            as @e[type=$present_ribbon,distance=...1,component=IdSystem.unlinked,limit=1] function {
+                set @s.ArmorItems[3].tag.display.color = RIBBON_COLOR->enx_psnt_global
+                set @s.Pose = enx_presents:data~RandomRotation
+                function ${IdSystem.link_holder.set_link}
+            }
+            as @e[type=$present_hitbox,distance=...1,component=IdSystem.unlinked,limit=1] function ${IdSystem.link_holder.set_link}
+        }
+    }
+    
+    function capture_item {
+        component @s add present_closed
+        set @s.ArmorItems[0] = enx_presents:data~CaptureItem
+        set @s.ArmorItems[3].tag.CustomModelData = 17
+        eval IdSystem.usingChildren(function(children) {
+            set $children[type=$present_ribbon,limit=1].ArmorItems[3].tag.CustomModelData = 18
+        })
+        playsound minecraft:item.armor.equip_generic master @a
+    }
+    
+    ticking unless entity @s[component=present_closed] unless entity @s[nbt={Passengers:[${present_hitbox.getMatchingNBT().merge(nbt<{HurtTime:0s}>)}]}] function {
+        set enx_presents:data~PresentItem = @s.ArmorItems[1]
+        using summon item{Item:{id:"minecraft:stone",Count:1b}} with undo_present {
+            set @s.Item = enx_presents:data~PresentItem
+            tag @s add crafted
+        }
+        kill @s
+    }
+}
+
+var dyes = [
+    item<minecraft:white_dye>,
+    item<minecraft:orange_dye>,
+    item<minecraft:magenta_dye>,
+    item<minecraft:light_blue_dye>,
+    item<minecraft:yellow_dye>,
+    item<minecraft:lime_dye>,
+    item<minecraft:pink_dye>,
+    item<minecraft:gray_dye>,
+    item<minecraft:light_gray_dye>,
+    item<minecraft:cyan_dye>,
+    item<minecraft:purple_dye>,
+    item<minecraft:blue_dye>,
+    item<minecraft:brown_dye>,
+    item<minecraft:green_dye>,
+    item<minecraft:red_dye>,
+    item<minecraft:black_dye>
+]
+
+define entity default item {
+    
+    # Placing presents
+    ticking if entity @s[tag=!crafted,nbt={OnGround:1b,Item:{tag:${present_item.getMatchingNBT()}}}] unless entity @e[type=$present_box,distance=..1] function {
+        set BOX_COLOR->enx_psnt_global = @s.Item.tag.Present.BoxColor
+        set RIBBON_COLOR->enx_psnt_global = @s.Item.tag.Present.RibbonColor
+        set enx_presents:data~PresentItem = @s.Item
+        set enx_presents:data~RandomRotation = {Head:[0.0f,0.0f,0.0f]}
+        set enx_presents:data~RandomRotation.Head[1] = @s.Rotation[0]
+        eval present_box.summon_setup()
+        kill @s
+    }
+    
+    # Wrapping items
+    ticking unless data entity @s Item.tag.Present if entity @e[type=$present_box,component=!present_closed,distance=..0.5] function {
+        set enx_presents:data~CaptureItem = @s.Item
+        as @e[type=$present_box,component=!present_closed,distance=..0.5,limit=1] function ${present_box.capture_item}
+        kill @s
+    }
+    
+    # Dye index
+    ticking if data entity @s Thrower if entity @s[nbt={Age:0s}] function {
+        var i = 0
+        for(dye in dyes) {
+            set @s[nbt={Item:{id:${new tag_string((string) dye)}}}]->enx_psnt_dye = $i
+            eval i++
+        }
+    }
+    
+    ticking if entity @s[scores={enx_psnt_c_index=isset}] unless entity @s[nbt={Item:{Count:1b}}] function {
+        scoreboard players reset @s enx_psnt_c_index
+        scoreboard players reset @s enx_psnt_dye
+    }
+    
+    # Crafting
+    ticking if block ~ ~-1 ~ minecraft:crafting_table if score @s enx_psnt_dye isset unless score @s enx_psnt_c_index isset function {
+        align xyz set @s->enx_psnt_c_index > @e[type=item,scores={enx_psnt_dye=isset},dx=0,dy=1,dz=0]->enx_psnt_c_index
+        set @s->enx_psnt_c_index += 1
+    }
+    
+    # Crafting
+    ticking if block ~ ~-1 ~ minecraft:crafting_table if entity @s[nbt={Item:{id:"minecraft:paper"}}] align xyz if entity @e[type=item,scores={enx_psnt_c_index=isset},dx=0,dy=1,dz=0] function {
+        set FIRST->enx_psnt_c_index = ${Integer.MAX_VALUE}
+        set SECOND->enx_psnt_c_index = ${Integer.MAX_VALUE}
+        set FIRST->enx_psnt_dye = ${Integer.MAX_VALUE}
+        set SECOND->enx_psnt_dye = ${Integer.MAX_VALUE}
+        
+        # Find the first item index
+        set FIRST->enx_psnt_c_index < @e[type=item,scores={enx_psnt_dye=isset},dx=0,dy=1,dz=0]->enx_psnt_c_index
+        
+        # Relativize all other item indices to the first found
+        as @e[type=item,scores={enx_psnt_c_index=isset}] set @s->enx_psnt_op = @s->enx_psnt_c_index
+        as @e[type=item,scores={enx_psnt_c_index=isset}] set @s->enx_psnt_op -= FIRST->enx_psnt_c_index
+        
+        # Grab the first dye color
+        as @e[type=item,dx=0,dy=1,dz=0] if score @s enx_psnt_c_index = FIRST enx_psnt_c_index set FIRST->enx_psnt_dye = @s->enx_psnt_dye
+        # Exclude the first item from the second calculation
+        as @e[type=item,dx=0,dy=1,dz=0] if score @s enx_psnt_c_index = FIRST enx_psnt_c_index scoreboard players reset @s enx_psnt_op
+        
+        # Find the second item index
+        set SECOND->enx_psnt_c_index < @e[type=item,scores={enx_psnt_dye=isset,enx_psnt_op=isset},dx=0,dy=1,dz=0]->enx_psnt_op
+        
+        # Grab the second dye color
+        as @e[type=item,dx=0,dy=1,dz=0] if score @s enx_psnt_op = SECOND enx_psnt_c_index set SECOND->enx_psnt_dye = @s->enx_psnt_dye
+        
+        if score FIRST enx_psnt_dye matches 0..15 if score SECOND enx_psnt_dye matches 0..15 function {
+            as @e[type=item,dx=0,dy=1,dz=0] if score @s enx_psnt_c_index = FIRST enx_psnt_c_index kill @s
+            as @e[type=item,dx=0,dy=1,dz=0] if score @s enx_psnt_op = SECOND enx_psnt_c_index kill @s
+            eval present_item.data_setup()
+        }
+    }
+}

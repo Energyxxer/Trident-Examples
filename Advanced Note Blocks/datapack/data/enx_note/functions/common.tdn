@@ -1,0 +1,13 @@
+@on compile
+@require enx_util:id_system
+
+var IdSystem = IdSystemBuilder.create(
+    "enx_note_",
+    {
+        id: "enx_note_id",
+        link: "enx_note_link"
+    }
+)
+
+define objective enx_note
+define objective enx_note_instr

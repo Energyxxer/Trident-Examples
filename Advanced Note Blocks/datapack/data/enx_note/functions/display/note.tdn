@@ -1,0 +1,8 @@
+var noteNames = "F#, G, G#, A, A#, B, C, C#, D, D#, E, F, F#".split(", ")
+
+var i = 0
+for(i = NOTE_RANGE.min; i < NOTE_RANGE.max; i++) {
+    var note = noteNames[Math.floorMod(i,12)] + (Math.floorDiv(i+6,12)+1)
+    if score DISPLAY enx_note matches $i title @a[tag=note_display_target] actionbar {"text":${"Set to: " + note},"color":"green"}
+}
+tag @a remove note_display_target

@@ -1,0 +1,2 @@
+execute align xyz positioned ~0.5 ~0.6 ~0.5 run summon minecraft:armor_stand ~ ~ ~ {CustomName:"\"Advanced Note Block\"",NoGravity:1b,Small:1b,Invisible:1b,Marker:1b,Invulnerable:1b,ArmorItems:[{},{},{},{id:"minecraft:lime_stained_glass",Count:1b,tag:{Enchantments:[{}]}}],Pose:{Head:[180.0f,0.0f,0.0f]},Tags:["trident-entity.enx_note.noteblock","trident-component.enx_util.enx_note_id_holder","new","change_note"]}
+kill @s[type=minecraft:armor_stand,tag=spawn_enx_note_block]

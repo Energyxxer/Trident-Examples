@@ -1,0 +1,5 @@
+$STORAGE: {
+    "enx_ptng:data": {
+        HeldStack: $ITEM
+    }
+}

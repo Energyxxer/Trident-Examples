@@ -1,0 +1,43 @@
+@on compile
+
+define objective enx_sub_anim
+define objective enx_sub_life
+
+define entity component torpedo_immune
+
+define entity torpedo minecraft:armor_stand implements torpedo_immune {
+    default name "Torpedo"
+    default nbt {
+        Invisible:1b,
+        Invulnerable:1b,
+        Marker:1b,
+        Small:1b,
+        ArmorItems:[{},{},{},${item<minecraft:music_disc_13#2>.getSlotNBT()}]
+    }
+    
+    ticking function {
+        particle bubble ~ ~ ~ 0 0 0 1 5 force
+        set @s->enx_sub_anim += 1
+        set @s->enx_sub_life += 1
+        set @s[scores={enx_sub_anim=2..}]->enx_sub_anim = 0
+        # Have to constantly modify rotation so it syncs with the client
+        tp @s[scores={enx_sub_anim=0}] ^ ^ ^0.5 ~ ~1
+        tp @s[scores={enx_sub_anim=1}] ^ ^ ^0.5 ~ ~-1
+        if score @s enx_sub_life matches 4.. positioned ~-.5 ~-.5 ~-.5 if entity @e[component=!torpedo_immune,dx=1,dy=1,dz=1] positioned ~.5 ~.5 ~.5 align xyz positioned ~.5 ~.5 ~.5 function ${this.detonate}
+        if entity @s unless predicate ${PREDICATE_IN_WATER} function ${this.detonate}
+        
+        #Kill after 30s
+        kill @s[scores={enx_sub_life=600..}]
+    }
+    
+    function detonate {
+        unless block ~ ~ ~ #minecraft:wither_immune setblock ~ ~ ~ air destroy
+        summon creeper ~ ~ ~ {CustomName:"\"a torpedo\"",Fuse:0s,ExplosionRadius:${new tag_byte(Config.torpedoDamage)},DeathLootTable:"",ActiveEffects:[{Id:14b,Duration:10000,Amplifier:117b,ShowParticles:0b}]}
+        schedule function ${
+            function {
+                kill @e[type=minecraft:area_effect_cloud,nbt={Effects:[{ShowParticles:0b,Id:14b,Amplifier:117b}]}]
+            }
+        } 2t append
+        kill @s
+    }
+}

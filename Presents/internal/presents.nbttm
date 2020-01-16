@@ -1,0 +1,6 @@
+$ITEM_TAG: {
+    Present: {
+        BoxColor: Int,
+        RibbonColor: Int
+    }
+}

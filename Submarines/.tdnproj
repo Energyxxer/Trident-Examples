@@ -1,0 +1,22 @@
+{
+  "default-namespace": "enx_sub",
+  "language-level": 2,
+  "datapack-output": "$PROJECT_DIR$\\out\\Submarines",
+  "resources-output": "$PROJECT_DIR$\\out\\Submarines-resources.zip",
+  "export-comments": false,
+  "strict-nbt": false,
+  "strict-text-components": false,
+  "game-logger": {
+    "compact": false,
+    "timestamp-enabled": true,
+    "pos-enabled": true,
+    "line-number-enabled": false
+  },
+  "target-version": [
+    1,
+    15,
+    0
+  ],
+  "export-gamelog": true,
+  "anonymous-function-name": "_anonymous*"
+}

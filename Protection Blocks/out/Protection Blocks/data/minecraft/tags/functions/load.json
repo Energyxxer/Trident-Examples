@@ -1,0 +1,7 @@
+{
+  "values": [
+    "enx_util:components/invisible/refresh",
+    "enx_util:components/on_fire/refresh",
+    "enx_prot:trident/create_objectives"
+  ]
+}

@@ -1,0 +1,177 @@
+@on compile
+@require enx_prot:region_block
+
+define entity default player {
+    ticking function {
+        set @s[scores={enx_prot_place=1..2}]->enx_prot_place += 1
+        set @s[scores={enx_prot_place=3..}]->enx_prot_place = 0
+        
+        set @s[scores={enx_prot_opdropp=1..2}]->enx_prot_opdropp += 1
+        set @s[scores={enx_prot_opdropp=3..}]->enx_prot_opdropp = 0
+        
+        scoreboard players enable @s enx_prot_ui
+        scoreboard players enable @s region
+        scoreboard players enable @s region_remove
+        if score @s region isset unless score @s region matches 0 set @s->enx_prot_ui = 5
+        if score @s region_remove isset unless score @s region_remove matches 0 set @s->enx_prot_ui = 6
+    }
+    
+    ticking unless score @s enx_prot_ui matches 0 unless score @s enx_prot_ui matches 4 function menus {
+        set @s->${RegionIdSystem.objectives.link} = @s->enx_prot_in_rid
+        eval RegionIdSystem.usingParent(function(inRegion) {
+            unless entity $inRegion function deny_menu_no_region {
+                title @s actionbar [{"text":"You are not inside a region!","color":"red"}]
+                scoreboard players reset @s enx_prot_ui
+            }
+            set PERMISSION_CHECK->enx_prot_global = @s->${PlayerIdSystem.objectives.id}
+            as $inRegion function ${region_block.check_permissions}
+            if score IS_OWNER enx_prot_global matches 0 function deny_menu_not_owner {
+                title @s actionbar [{"text":"You are not the owner of this region!","color":"red"}]
+                scoreboard players reset @s enx_prot_ui
+                scoreboard players reset @s region
+                scoreboard players reset @s region_remove
+            }
+            
+            set enx_prot:data~Whitelist = $inRegion.ArmorItems[0].tag.RegionWhitelist
+            
+            
+            var bars = text_component<{"text":"================================","bold":true,"strikethrough":true}>
+            
+            if score @s enx_prot_ui matches 1 function main {
+                tellraw @s ${new text_component([
+                    "\n\n\n\n",
+                    bars,
+                    "\n\n                 ",
+                    {"text":"Region Control","bold":true,"color":"gold"},
+                    "\n\n             ",
+                    {"text":"[ Manage members ]","color":"yellow","bold":true,"hoverEvent":{"action":"show_text","value":"Set who can and can't build in this region."},"clickEvent":{"action":"run_command","value":"/trigger enx_prot_ui set 2"}},
+                    "\n               ",
+                    {"text":"[ List members ]","color":"yellow","bold":true,"hoverEvent":{"action":"show_text","value":"List all whitelisted players."},"clickEvent":{"action":"run_command","value":"/trigger enx_prot_ui set 3"}},
+                    "\n\n             ",
+                    {"text":"[ Toggle outlines ]","color":"yellow","bold":true,"hoverEvent":{"action":"show_text","value":"Toggle visibility of region outlines."},"clickEvent":{"action":"run_command","value":"/trigger enx_prot_ui set 4"}},
+                    "\n\n",
+                    bars
+                ])}
+            }
+            if score @s enx_prot_ui matches 2 function manage_members {
+                tellraw @s ${new text_component([
+                    "\n\n\n\n\n\n\n\n",
+                    bars,
+                    "\n\n              ",
+                    {"text":"Member Management","bold":true,"color":"aqua"},
+                    "\n\n               ",
+                    {"text":"[ Add ]","color":"aqua","bold":true,"hoverEvent":{"action":"show_text","value":"Allow a player to build in this region."},"clickEvent":{"action":"suggest_command","value":"/trigger region add ID"}},
+                    " ",
+                    {"text":"[ Remove ]","color":"aqua","bold":true,"hoverEvent":{"action":"show_text","value":"Remove a player from the region whitelist."},"clickEvent":{"action":"suggest_command","value":"/trigger region_remove set ID"}},
+                    {"text":"\n\n Replace \"ID\" with the ID of the player you \n want to add/remove. For reference, here \n are all the online players and their IDs:\n","color":"dark_aqua"}
+                ])}
+                using tag enx_prot_list_online @s {
+                    as @a tellraw @a[tag=enx_prot_list_online] ["        ",{"selector":"@s","color":"dark_aqua"},"  ",{"text":"(ID: ","color":"aqua"},{"score":{"objective":${PlayerIdSystem.objectives.id},"name":"@s"},"color":"aqua"},{"text":")","color":"aqua"}]
+                }
+                tellraw @s ${new text_component(["\n",bars])}
+            }
+            if score @s enx_prot_ui matches 3 function list_members {
+                tellraw @s ["\n",{"text":"  Whitelisted Players:","color":"aqua","bold":true}]
+                
+                if data storage enx_prot:data Whitelist[0] function {
+                    set PID_CHECK->enx_prot_global = enx_prot:data~Whitelist[0]
+                    data remove storage enx_prot:data Whitelist[0]
+                    using tag enx_region_listed_player @a if score @s ${PlayerIdSystem.objectives.id} = PID_CHECK enx_prot_global {
+                        if entity @a[tag=enx_region_listed_player] tellraw @s ["    ",{"text":"» ","color":"green","hoverEvent":{"action":"show_text","value":"Online"}},{"selector":"@a[tag=enx_region_listed_player]","color":"yellow"}]
+                        unless entity @a[tag=enx_region_listed_player] tellraw @s ["    ",{"text":"» ","color":"red","hoverEvent":{"action":"show_text","value":"Offline"}},{"text":"Player ID ","color":"yellow"},{"score":{"objective":"enx_prot_global","name":"PID_CHECK"},"color":"yellow"},{"text":" ﹖ ","color":"gray","hoverEvent":{"action":"show_text","value":"This player is not online, therefore\ntheir username is not available."}}]
+                    }
+                    if data storage enx_prot:data Whitelist[0] function /
+                }
+            }
+            if score @s enx_prot_ui matches 5 function add {
+                set PLAYER_ADD->enx_prot_global = @s->region
+                set ALREADY_LISTED->enx_prot_global = 0
+                set @s->${PlayerIdSystem.objectives.link} = @s->region
+             
+                if data storage enx_prot:data Whitelist[0] function {
+                    set PID_CHECK->enx_prot_global = enx_prot:data~Whitelist[0]
+                    data remove storage enx_prot:data Whitelist[0]
+                    if score PID_CHECK enx_prot_global = PLAYER_ADD enx_prot_global set ALREADY_LISTED->enx_prot_global = 1
+                    if data storage enx_prot:data Whitelist[0] unless score PID_CHECK enx_prot_global = PLAYER_ADD enx_prot_global function /
+                }
+                if score ALREADY_LISTED enx_prot_global matches 1 tellraw @s {"text":"That player is already whitelisted!","color":"red"}
+                unless score ALREADY_LISTED enx_prot_global matches 1 function {
+                    var addToWhitelist = function() {
+                        set enx_prot:data~Temp (int) = PLAYER_ADD->enx_prot_global
+                        data modify entity $inRegion ArmorItems[0].tag.RegionWhitelist append from storage enx_prot:data Temp
+                    }
+                    do if(!Config.add_requires_online) {
+                        eval addToWhitelist()
+                    }
+                    eval PlayerIdSystem.usingParent(function(toAdd) {
+                        do if(Config.add_requires_online) {
+                            unless entity $toAdd function {
+                                tellraw @s {"text":"That player is not online!","color":"red"}
+                            }
+                        }
+                        if entity $toAdd function {
+                            set $toAdd->enx_prot_pre_rid = -1
+                            do if(Config.add_requires_online) {
+                                eval addToWhitelist()
+                            }
+                            tellraw @s [{"selector":${(string) toAdd},"color":"aqua"},{"text":" has been added to this region's whitelist!","color":"dark_aqua"}]
+                            using tag region_owner_added @s {
+                                tellraw $toAdd[type=player] [{"text":"You have been added to ","color":"dark_aqua"},{"selector":"@a[tag=region_owner_added]","color":"aqua"},{"text":"'s region's whitelist!","color":"dark_aqua"}]
+                            }
+                        }
+                        do if(!Config.add_requires_online) {
+                            unless entity $toAdd tellraw @s [{"text":"Player ID ","color":"aqua"}, {"score":{"name":"PLAYER_ADD","objective":"enx_prot_global"},"color":"aqua"},{"text":" has been added to this region's whitelist!","color":"dark_aqua"}]
+                        }
+                    })
+                }
+                scoreboard players reset @s region
+            }
+            if score @s enx_prot_ui matches 6 function remove {
+                set PLAYER_REMOVE->enx_prot_global = @s->region_remove
+                if score PLAYER_REMOVE enx_prot_global = @s ${PlayerIdSystem.objectives.id} tellraw @s {"text":"You cannot remove yourself from the region!","color":"red"}
+                unless score PLAYER_REMOVE enx_prot_global = @s ${PlayerIdSystem.objectives.id} function {
+                    set ALREADY_LISTED->enx_prot_global = 0
+                    set @s->${PlayerIdSystem.objectives.link} = @s->region_remove
+                    
+                    set enx_prot:data~NewWhitelist = []
+                
+                    if data storage enx_prot:data Whitelist[0] function {
+                        set PID_CHECK->enx_prot_global = enx_prot:data~Whitelist[0]
+                        unless score PID_CHECK enx_prot_global = PLAYER_REMOVE enx_prot_global data modify storage enx_prot:data NewWhitelist append from storage enx_prot:data Whitelist[0]
+                        if score PID_CHECK enx_prot_global = PLAYER_REMOVE enx_prot_global set ALREADY_LISTED->enx_prot_global = 1
+                        data remove storage enx_prot:data Whitelist[0]
+                        if data storage enx_prot:data Whitelist[0] function /
+                    }
+                    unless score ALREADY_LISTED enx_prot_global matches 1 tellraw @s {"text":"That player is not whitelisted!","color":"red"}
+                    if score ALREADY_LISTED enx_prot_global matches 1 function {
+                        set $inRegion.ArmorItems[0].tag.RegionWhitelist = enx_prot:data~NewWhitelist
+                        eval PlayerIdSystem.usingParent(function(toRemove) {
+                            if entity $toRemove function {
+                                set $toRemove->enx_prot_pre_rid = -1
+                                tellraw @s [{"selector":${(string) toRemove},"color":"aqua"},{"text":" has been removed from this region's whitelist!","color":"dark_aqua"}]
+                                using tag region_owner_removed @s {
+                                    tellraw $toRemove[type=player] [{"text":"You have been removed from ","color":"dark_aqua"},{"selector":"@a[tag=region_owner_removed]","color":"aqua"},{"text":"'s region's whitelist!","color":"dark_aqua"}]
+                                }
+                            }
+                            unless entity $toRemove tellraw @s [{"text":"Player ID ","color":"aqua"}, {"score":{"name":"PLAYER_REMOVE","objective":"enx_prot_global"},"color":"aqua"},{"text":" has been removed from this region's whitelist!","color":"dark_aqua"}]
+                        })
+                    }
+                }
+                scoreboard players reset @s region_remove
+            }    
+            scoreboard players reset @s enx_prot_ui
+        })
+    }
+    
+    ticking if score @s enx_prot_ui matches 4 function toggle_outlines {
+        tag @s[component=view_regions] add was_enabled
+        component @s add view_regions
+        component @s[tag=was_enabled] remove view_regions
+        tag @s remove was_enabled
+        
+        title @a[component=!view_regions] actionbar [{"text":"Region outlines have been ","color":"gold"},{"text":"DISABLED","color":"red","bold":true}]
+        title @a[component=view_regions] actionbar [{"text":"Region outlines have been ","color":"gold"},{"text":"ENABLED","color":"green","bold":true}]
+        
+        scoreboard players reset @s enx_prot_ui
+    }
+}

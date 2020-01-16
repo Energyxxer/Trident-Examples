@@ -1,0 +1,14 @@
+scoreboard objectives add enx_prot_tier dummy
+scoreboard objectives add enx_prot_place minecraft.used:minecraft.armor_stand
+scoreboard objectives add enx_prot_op dummy
+scoreboard objectives add enx_prot_rid_lnk dummy
+scoreboard objectives add enx_prot_pre_rid dummy
+scoreboard objectives add enx_prot_global dummy
+scoreboard objectives add enx_prot_pid dummy
+scoreboard objectives add enx_prot_pid_lnk dummy
+scoreboard objectives add enx_prot_rid dummy
+scoreboard objectives add enx_prot_opdropp minecraft.custom:minecraft.inspect_dropper
+scoreboard objectives add region_remove trigger
+scoreboard objectives add enx_prot_in_rid dummy
+scoreboard objectives add region trigger
+scoreboard objectives add enx_prot_ui trigger

@@ -1,0 +1,5 @@
+execute positioned ~-48 ~-48 ~-48 if entity @e[type=minecraft:armor_stand,tag=trident-entity.enx_prot.region_block,scores={enx_prot_tier=1},dx=95,dy=95,dz=95] run scoreboard players set OVERLAPPING enx_prot_global 1
+execute positioned ~-56 ~-56 ~-56 if entity @e[type=minecraft:armor_stand,tag=trident-entity.enx_prot.region_block,scores={enx_prot_tier=2},dx=111,dy=111,dz=111] run scoreboard players set OVERLAPPING enx_prot_global 1
+execute positioned ~-64 ~-64 ~-64 if entity @e[type=minecraft:armor_stand,tag=trident-entity.enx_prot.region_block,scores={enx_prot_tier=3},dx=127,dy=127,dz=127] run scoreboard players set OVERLAPPING enx_prot_global 1
+execute positioned ~-72 ~-72 ~-72 if entity @e[type=minecraft:armor_stand,tag=trident-entity.enx_prot.region_block,scores={enx_prot_tier=4},dx=143,dy=143,dz=143] run scoreboard players set OVERLAPPING enx_prot_global 1
+execute positioned ~-80 ~-80 ~-80 if entity @e[type=minecraft:armor_stand,tag=trident-entity.enx_prot.region_block,scores={enx_prot_tier=5},dx=159,dy=159,dz=159] run scoreboard players set OVERLAPPING enx_prot_global 1

@@ -1,0 +1,130 @@
+@on compile
+@require enx_note:common
+@require enx_note:interface
+@require enx_util:util
+
+define entity noteblock minecraft:armor_stand implements IdSystem.id_holder {
+    default name "Advanced Note Block"
+    default nbt {
+        NoGravity:1b,
+        Small:1b,
+        Invisible:1b,
+        Marker:1b,
+        Invulnerable:1b,
+        ArmorItems:[{},{},{},{id:"minecraft:lime_stained_glass",Count:1b,tag:{Enchantments:[{}]}}],
+        Pose:{Head:[180.0f,0.0f,0.0f]},
+        Tags:["new","change_note"]
+    }
+    
+    ticking if entity @s[tag=new,scores={${IdSystem.objectives.id}=isset}] function init {
+        tag @s remove new
+        setblock ~ ~ ~ minecraft:note_block
+        setblock ~ ~1 ~ minecraft:moving_piston
+        set @s->enx_note = 0
+        set @s->enx_note_instr = 0
+    }
+    
+    var setLinks = function() {
+        eval IdSystem.prepareLink()
+        positioned ~-.5 ~ ~-.5 as @e[type=$note_button,distance=..3.001,component=IdSystem.unlinked,sort=nearest,limit=1,dx=2,dy=3,dz=2] function ${IdSystem.link_holder.set_link}
+        as @e[type=$note_hitbox,distance=..3.001,component=IdSystem.unlinked,sort=nearest,limit=1,dx=1,dy=3,dz=1] function ${IdSystem.link_holder.set_link}
+    }
+    
+    function kill {
+        if block ~ ~1 ~ minecraft:moving_piston setblock ~ ~1 ~ air
+        data modify entity @e[type=item,distance=..3,nbt={Age:0s,PickupDelay:10s,Item:{id:"minecraft:note_block",Count:1b}},limit=1] Item merge value ${noteblock_spawn_item.getSlotNBT()}
+        kill @s
+    }
+    
+    ticking if entity @s[tag=!new] function tick {
+        unless block ~ ~ ~ minecraft:note_block function ${this.kill}
+        
+        if block ~ ~ ~ minecraft:note_block[powered=true] tag @s[tag=!powered] add play
+        if block ~ ~ ~ minecraft:note_block[powered=true] tag @s add powered
+        if block ~ ~ ~ minecraft:note_block[powered=false] tag @s remove powered
+        
+        if block ~ ~ ~ minecraft:note_block unless block ~ ~ ~ minecraft:note_block[note=0] function ${this.interact}
+        if entity @s[tag=play] function ${this.play}
+        if entity @s[tag=ui_open] particle minecraft:ambient_entity_effect ~ ~ ~ .5 .5 .5 1 5
+    }
+    
+    function interact {
+        tag @s add interact
+        tag @s add play
+        setblock ~ ~ ~ minecraft:note_block[note=0]
+        
+        if entity @s[tag=interact,tag=ui_open] function {
+            tag @s remove interact
+            tag @s remove ui_open
+            
+            eval IdSystem.usingChildren(function(children) {
+                component $children add IdSystem.unlinked
+            })
+        }
+        if entity @s[tag=interact,tag=!ui_open] function {
+            tag @s remove interact
+            
+            tag @s add ui_open
+            summon ${note_button.construct(ButtonActions.Main, text_component<"$STATE$">)} ~ ~.1 ~
+            if entity @s[tag=change_note] set @e[type=$note_button,component=IdSystem.unlinked,distance=..3,limit=1].CustomName = ${new tag_string((string)TC_NOTE)}
+            if entity @s[tag=!change_note] set @e[type=$note_button,component=IdSystem.unlinked,distance=..3,limit=1].CustomName = ${new tag_string((string)TC_INSTRUMENT)}
+            
+            eval this.setLinks()
+        }
+    }
+    
+    function summon {
+        align xyz positioned ~.5 ~.6 ~.5 summon $this
+        kill @s[type=minecraft:armor_stand,tag=spawn_enx_note_block]
+    }
+    
+    function give {
+        give @s $noteblock_spawn_item
+    }
+    
+    function internal_spawn {
+        @tag tick
+        as @e[type=minecraft:armor_stand,tag=spawn_enx_note_block] at @s function ${noteblock.summon}
+    }
+    
+    function play {
+        tag @s remove play
+        particle note ~ ~1 ~ 0 0 0 1 1
+        
+        var instrumentIndex = 0
+        for(instrument in NoteData.Instruments) {
+            if score @s enx_note_instr matches $instrumentIndex function {
+                eval generateFunctionTree(
+                    (string) resource</>,
+                    NOTE_RANGE,
+                    4,
+                    function(r, f) {
+                        if score @s enx_note matches $r function $f
+                    },
+                    function(i) {
+                        var pitch = Math.pow(2, (real)((-12 + i))/12)
+                        var event = instrument.event
+                        do if(i < 0) {
+                            eval pitch *= 4
+                            eval pitch = Math.max(pitch, 0.5)
+                            eval event = (resource) (((string) event) + "_-1")
+                        } else do if(i > 24) {
+                            eval pitch /= 4
+                            eval pitch = Math.min(pitch, 2.0)
+                            eval event = (resource) (((string) event) + "_1")
+                        }
+                        if score @s enx_note matches $i playsound $event block @a ~ ~ ~ 1.0 $pitch 0.0
+                    }
+                )
+            }
+            eval instrumentIndex++
+        }
+    }
+}
+
+define item noteblock_spawn_item minecraft:armor_stand {
+    default nbt {EntityTag:{Tags:["spawn_enx_note_block"],Invisible:1b,NoGravity:1b},Enchantments:[{}]}
+    default name {"text":"Advanced Note Block","italic":false}
+}
+
+

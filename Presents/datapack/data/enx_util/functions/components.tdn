@@ -1,0 +1,10 @@
+@on compile
+
+define entity component invisible {
+    default nbt {ActiveEffects: [{Id:14b,Duration:200000,Amplifier:0b,ShowParticles:0b}]}
+    function refresh {
+        @tag load
+        effect give @e[component=invisible] invisibility 100000 0 true
+        schedule function / 3600s
+    }
+}

@@ -1,0 +1,46 @@
+@on compile
+@require enx_note:common
+@require enx_util:components
+
+define entity note_hitbox minecraft:bat implements IdSystem.datakill_on_link_broken, invisible {
+    default nbt {
+        Silent:1b,
+        ActiveEffects:[
+            {Id:11b, Duration: 1000000, Amplifier:5b, ShowParticles: 0b}
+        ],
+        DeathLootTable: "minecraft:empty"
+    }
+    
+    var construct = function(action, next) {
+        var compound = this.getSettingNBT()
+        do if(next != null) {
+            eval compound = compound.merge(nbt<{Passengers:[$next]}>)
+        }
+        return compound
+    }
+}
+
+define entity note_button minecraft:area_effect_cloud implements IdSystem.kill_on_link_broken {
+    default nbt {
+        Age: ${new tag_int(Integer.MIN_VALUE)},
+        Duration: -1,
+        WaitTime: ${new tag_int(Integer.MIN_VALUE)},
+        Radius: 0f,
+        Particle: "",
+        CustomNameVisible: 1b
+    }
+    
+    var construct = function(action, name, next) {
+        var compound = this.getSettingNBT().merge(nbt<{
+            CustomName: ${new tag_string((string)name)},
+            Passengers: [${note_hitbox.construct(action, next)}],
+            Tags:[${new tag_string(action.idTag)}]
+        }>)
+        return compound
+    }
+    
+    ticking function {
+        tag @s remove interact
+        tag @s[nbt={Passengers:[{HurtTime:9s}]}] add interact
+    }
+}

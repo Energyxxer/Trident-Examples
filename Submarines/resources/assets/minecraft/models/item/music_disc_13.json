@@ -1,0 +1,56 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "item/music_disc_13"
+    },
+    "overrides": [
+        {
+            "predicate": {
+                "custom_model_data": 1
+            },
+            "model": "entity/submarine/whole"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 2
+            },
+            "model": "entity/submarine/torpedo"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 3
+            },
+            "model": "entity/submarine/nopropeller"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 4
+            },
+            "model": "entity/submarine/propeller0"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 5
+            },
+            "model": "entity/submarine/propeller1"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 6
+            },
+            "model": "entity/submarine/propeller2"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 7
+            },
+            "model": "entity/submarine/propeller3"
+        },
+        {
+            "predicate": {
+                "custom_model_data": 8
+            },
+            "model": "entity/submarine/propeller4"
+        }
+    ]
+}

@@ -1,0 +1,201 @@
+{
+	"block.note_block.basedrum_-1": {
+		"sounds": [
+			"note/bd_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.bass_-1": {
+		"sounds": [
+			"note/bassattack_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.bell_-1": {
+		"sounds": [
+			"note/bell_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.chime_-1": {
+		"sounds": [
+			"note/icechime_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.flute_-1": {
+		"sounds": [
+			"note/flute_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.guitar_-1": {
+		"sounds": [
+			"note/guitar_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.harp_-1": {
+		"sounds": [
+			"note/harp2_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.hat_-1": {
+		"sounds": [
+			"note/hat_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.snare_-1": {
+		"sounds": [
+			"note/snare_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.xylophone_-1": {
+		"sounds": [
+			"note/xylobone_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.cow_bell_-1": {
+		"sounds": [
+			"note/cow_bell_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.iron_xylophone_-1": {
+		"sounds": [
+			{
+				"name": "note/iron_xylophone_-1",
+				"volume": 1
+			}
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.didgeridoo_-1": {
+		"sounds": [
+			"note/didgeridoo_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.bit_-1": {
+		"sounds": [
+			"note/bit_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.banjo_-1": {
+		"sounds": [
+			"note/banjo_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.pling_-1": {
+		"sounds": [
+			"note/pling_-1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	
+	"block.note_block.basedrum_1": {
+		"sounds": [
+			"note/bd_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.bass_1": {
+		"sounds": [
+			"note/bassattack_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.bell_1": {
+		"sounds": [
+			"note/bell_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.chime_1": {
+		"sounds": [
+			"note/icechime_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.flute_1": {
+		"sounds": [
+			"note/flute_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.guitar_1": {
+		"sounds": [
+			"note/guitar_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.harp_1": {
+		"sounds": [
+			"note/harp2_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.hat_1": {
+		"sounds": [
+			"note/hat_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.snare_1": {
+		"sounds": [
+			"note/snare_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.xylophone_1": {
+		"sounds": [
+			"note/xylobone_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.cow_bell_1": {
+		"sounds": [
+			"note/cow_bell_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.iron_xylophone_1": {
+		"sounds": [
+			{
+				"name": "note/iron_xylophone_1",
+				"volume": 1
+			}
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.didgeridoo_1": {
+		"sounds": [
+			"note/didgeridoo_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.bit_1": {
+		"sounds": [
+			"note/bit_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.banjo_1": {
+		"sounds": [
+			"note/banjo_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	},
+	"block.note_block.pling_1": {
+		"sounds": [
+			"note/pling_1"
+		],
+		"subtitle": "subtitles.block.note_block.note"
+	}
+}

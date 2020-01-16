@@ -1,0 +1,25 @@
+@on compile
+@require enx_prot:region_block
+
+define entity default item {
+    ticking if block ~ ~-1 ~ crafting_table if entity @s[nbt={Item:{id:"minecraft:repeater",Count:1b}}] align xyz function {
+        using tag enx_prot_craft_repeater @s {
+            for(tier in Config.tiers) {
+                if entity @s as @e[type=item,nbt={Item:{id:${new tag_string(tier.crafting_item)},Count:1b}},dx=0,dy=1,dz=0] function {
+                    kill @e[type=item,tag=enx_prot_craft_repeater]
+                    set @s.Item = ${tier.spawnItem.getSlotNBT()}
+                    data merge entity @s {
+                        CustomName: ${text_component<{
+                            "text":${"Region Block (T" + tier.index + ")"},
+                            "color":"gold",
+                            "bold":true,
+                            "italic":false
+                        }>},
+                        CustomNameVisible:1b,
+                        Glowing:1b
+                    }
+                }
+            }
+        }
+    }
+}

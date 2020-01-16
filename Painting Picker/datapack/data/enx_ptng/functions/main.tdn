@@ -1,0 +1,22 @@
+@on compile
+
+var Motives = []
+var index = 1
+for(motive in MinecraftTypes.getDefinitionsForCategory("motive")) {
+    eval Motives.add({"id":(resource) motive.key,"index":index})
+    eval index++
+}
+
+
+define function video:start {
+    kill @e[type=painting]
+    clear @a
+    replaceitem entity @a hotbar.4 painting 64
+    replaceitem entity @a hotbar.0 ladder 1
+    tp @a -1141 18.5 125.0 180 -90
+    effect give @a slow_falling 10 0 true
+    effect give @a levitation 3 0 true
+    effect give @a instant_health 1000 0 true
+    effect give @a saturation 1000 0 true
+    gamemode survival @a
+}

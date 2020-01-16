@@ -1,0 +1,194 @@
+@on compile
+@require enx_sub:submarine
+@require enx_util:util
+
+define objective enx_sub_charge
+define objective enx_sub_cooldown
+
+var charge_sonar = 20
+var charge_torpedo = 60
+
+define function display_charge {
+    eval generateFunctionTree(
+        (string) resource</>,
+        int_range<0..${charge_torpedo+1}>,
+        4,
+        function(r, f) {
+            if score @s enx_sub_charge matches $r function $f
+        },
+        function(charge) {
+            var instructionColor = "gold"
+            do if(charge == 0) eval instructionColor = "gray"
+            var textComponents = [{"text":"HOLD ","color":instructionColor},{"keybind":"key.back","color":instructionColor},{"text":": [ ", "color":"gray"},{"text":"","color":"gold"}]
+            var peek = textComponents[textComponents.length-1]
+            var i = 0
+            for(i = 0; i <= charge_torpedo; i++) {
+                do if(i == charge) {
+                    do if(peek.text.isEmpty()) {
+                        eval peek.color = "white"
+                    } else {
+                        eval textComponents.add({"text":"","color":"white"})
+                        eval peek = textComponents[textComponents.length-1]
+                    }
+                }
+                do if(i == charge_sonar) {
+                    var color = "gray"
+                    do if(charge >= i && charge < charge_torpedo) {
+                        eval color = "green"
+                    }
+                    eval textComponents.add({"text":" SONAR ","color":color})
+                    eval textComponents.add({"text":"","color":peek.color})
+                    eval peek = textComponents[textComponents.length-1]
+                } else do if(i == charge_torpedo) {
+                    var color = "gray"
+                    do if(charge >= i) {
+                        eval color = "red"
+                    }
+                    eval textComponents.add({"text":" TORPEDO ","color":color})
+                    eval textComponents.add({"text":"","color":peek.color})
+                    eval peek = textComponents[textComponents.length-1]
+                } else {
+                    eval peek.text += "|"
+                }
+            }
+            eval textComponents.add({"text":"]          ","color":"gray"})
+            title @s[scores={enx_sub_charge=$charge}] actionbar ${new text_component(textComponents)}
+        }
+    )
+}
+
+define entity default player {
+    ticking if entity @s[nbt={RootVehicle:{Entity:${submarine.getMatchingNBT()}}}] function in_sub_tick {
+        set enx_sub:data~player = @s.{}
+        
+        effect give @s minecraft:night_vision 5 0 true
+        effect give @s minecraft:water_breathing 2 0 true
+        effect give @s minecraft:resistance 2 4 true
+        effect give @s minecraft:invisibility 2 0 true
+        
+        set @s->enx_sub_op = enx_sub:data~player.Motion[1] * 100
+        
+        
+        # Y MOTION
+        execute store success score deref ${SubInstructions.Y_MOTION} if score @s enx_sub_op matches 1..
+        #Comment here so the next command isn't appended to the end of the command-less execute
+        if entity @s[x_rotation=45..90] set ${SubInstructions.Y_MOTION} -= 1
+        
+        
+        
+        # VARIABLES
+        
+        set ORIGIN_X       -> enx_sub_op  = enx_sub:data~player.Pos[0]        * 100
+        set ORIGIN_Z       -> enx_sub_op  = enx_sub:data~player.Pos[2]        * 100
+        set ABSOLUTE_MOT_X -> enx_sub_op  = enx_sub:data~player.Motion[0]     * 10000
+        set ABSOLUTE_MOT_Z -> enx_sub_op  = enx_sub:data~player.Motion[2]     * 10000
+        set ANGLE          -> enx_sub_op  = enx_sub:data~player.Rotation[0]   * -1
+        
+        # SIN/COS(-yaw) CALCULATION
+        
+        using summon minecraft:area_effect_cloud with enx_sub_trig_calc {
+            set @s.Rotation[0] = ANGLE->enx_sub_op
+            at @s positioned 0.0 0.0 0.0 tp @s ^ ^ ^1
+            set COS_YAW -> enx_sub_op  = @s.Pos[0] * 100
+            set SIN_YAW -> enx_sub_op  = @s.Pos[2] * 100
+            kill @s
+        }
+        
+        # LOCAL MOTION VECTOR CALCULATION
+        
+        # Local Motion X
+        set PART_A  -> enx_sub_op  = ABSOLUTE_MOT_X -> enx_sub_op
+        set PART_A  -> enx_sub_op *= SIN_YAW        -> enx_sub_op
+        set PART_B  -> enx_sub_op  = ABSOLUTE_MOT_Z -> enx_sub_op
+        set PART_B  -> enx_sub_op *= COS_YAW        -> enx_sub_op
+        set PART_A  -> enx_sub_op += PART_B         -> enx_sub_op
+        
+        set LOCAL_MOT_X->enx_sub_op = PART_A->enx_sub_op
+        
+        # Local Motion Z
+        set PART_A  -> enx_sub_op  = 0
+        set PART_A  -> enx_sub_op -= ABSOLUTE_MOT_X -> enx_sub_op
+        set PART_A  -> enx_sub_op *= COS_YAW        -> enx_sub_op
+        set PART_B  -> enx_sub_op  = ABSOLUTE_MOT_Z -> enx_sub_op
+        set PART_B  -> enx_sub_op *= SIN_YAW        -> enx_sub_op
+        set PART_A  -> enx_sub_op += PART_B         -> enx_sub_op
+        
+        set LOCAL_MOT_Z->enx_sub_op = PART_A->enx_sub_op
+        
+        
+        
+        # YAW SPEED CALCULATION
+        
+        execute store success score deref ${SubInstructions.YAW_SPEED} if score LOCAL_MOT_X enx_sub_op matches ..-10000
+        #Comment here so the next command isn't appended to the end of the command-less execute
+        if score LOCAL_MOT_X enx_sub_op matches 10000.. set ${SubInstructions.YAW_SPEED} = -1
+        set ${SubInstructions.YAW_SPEED} *= TURN_SPEED->enx_sub_global
+        
+        
+        
+        # Z MOTION
+        execute store success score deref ${SubInstructions.Z_MOTION} if score LOCAL_MOT_Z enx_sub_op matches 10000..
+        #Comment here so the next command isn't appended to the end of the command-less execute
+        
+        
+        # SOUNDS
+        unless score LOCAL_MOT_X enx_sub_op matches -10000..10000 tag @s add moving
+        if score LOCAL_MOT_Z enx_sub_op matches 10000.. tag @s add moving
+        unless score deref ${SubInstructions.Y_MOTION} matches 0 tag @s add moving
+        set ${SubInstructions.ANIMATE} = 0
+        if entity @s[tag=moving] set ${SubInstructions.ANIMATE} = 1
+        if score LOCAL_MOT_Z enx_sub_op matches ..-10000 tag @s add moving
+        if entity @s[tag=!moving] playsound minecraft:entity.guardian.ambient master @a ~ ~ ~ 2.0 0.5 0.0
+        if entity @s[tag=moving] playsound minecraft:entity.guardian.attack master @a ~ ~ ~ 2.0 0.5 0.0
+        tag @s remove moving
+        
+        # ABILITIES
+        set ${SubInstructions.ABILITY} = 0
+        
+        tag @s remove enx_sub_charging
+        unless score LOCAL_MOT_Z enx_sub_op matches ..-10000 tag @s remove enx_sub_ability_lock
+        if score LOCAL_MOT_Z enx_sub_op matches ..-10000 unless score @s enx_sub_cooldown matches 1.. tag @s[tag=!enx_sub_ability_lock] add enx_sub_charging
+        if score @s[tag=enx_sub_charging] enx_sub_charge matches ${charge_sonar-1} playsound minecraft:entity.generic.small_fall master @s ~ ~ ~ 1 0 1
+        if score @s[tag=enx_sub_charging] enx_sub_charge matches ${charge_torpedo-1} playsound minecraft:entity.generic.big_fall master @s ~ ~ ~ 1 0 1
+        set @s[tag=enx_sub_charging,tag=!enx_sub_ability_lock,scores={enx_sub_charge=..${charge_torpedo-1}}]->enx_sub_charge += 1
+        if entity @s[scores={enx_sub_charge=1..},tag=!enx_sub_charging] function {
+            if score @s enx_sub_charge matches ${charge_sonar}..${charge_torpedo-1} function start_sonar {
+                set @s->enx_sub_cooldown = ${Config.sonarCooldown * 20}
+                set ${SubInstructions.ABILITY} = 1
+            }
+            if score @s enx_sub_charge matches ${charge_torpedo}.. function start_torpedo {
+                set @s->enx_sub_cooldown = ${Config.torpedoCooldown * 20}
+                set ${SubInstructions.ABILITY} = 2
+            }
+            set @s->enx_sub_charge = 0
+            tag @s add enx_sub_ability_lock
+        }
+        
+        if score @s enx_sub_cooldown matches 1.. function {
+            set SECONDS         -> enx_sub_op   = @s                -> enx_sub_cooldown
+            set SECONDS_DIV_10  -> enx_sub_op   = @s                -> enx_sub_cooldown
+            set SECONDS         -> enx_sub_op  /= 20
+            set SECONDS_DIV_10  -> enx_sub_op  %= 20
+            set SECONDS_DIV_10  -> enx_sub_op  *= 5
+            set SECONDS_DIV_100 -> enx_sub_op   = SECONDS_DIV_10    -> enx_sub_op
+            set SECONDS_DIV_10  -> enx_sub_op  /= 10
+            set SECONDS_DIV_100 -> enx_sub_op  %= 10
+            
+            var pre = ""
+            var count = 40
+            var i = 0
+            for(i = 0; i < count; i++) {
+                eval pre += "|"
+            }
+            eval pre = {"text":pre,"color":"dark_gray"}
+            var post = pre
+            
+            var text = ["",{"text":"COOLDOWN ","color":"red"},{"text":"[ ","color":"gray"},pre," ",{"score":{"name":"SECONDS","objective":"enx_sub_op"}},".",{"score":{"name":"SECONDS_DIV_10","objective":"enx_sub_op"}},{"score":{"name":"SECONDS_DIV_100","objective":"enx_sub_op"}},"s ",post,{"text":" ]             ","color":"gray"}]
+            title @s actionbar ${new text_component(text)}
+            set @s->enx_sub_cooldown -= 1
+        }
+        unless score @s enx_sub_cooldown matches 1.. function /../../display_charge
+        
+        positioned ~ ~-1.25 ~ as @e[type=$submarine,distance=..1,sort=nearest,limit=1] at @s function ${submarine.execute_instructions}
+    }
+}

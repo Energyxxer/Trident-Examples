@@ -1,0 +1,43 @@
+{
+    "skulls": {
+        "purple": {"SkullOwner":{"Id":"4816d45d-96c3-4e43-9965-e9c17192dad3","Properties":{"textures":[{"Value":"eyJ0aW1lc3RhbXAiOjE0NzM0Nzg0MzAwNDAsInByb2ZpbGVJZCI6ImRlZDdhMmFmMTVlNjRjOWVhYjIzZWFlOTkyMzUzMDY4IiwicHJvZmlsZU5hbWUiOiJFbmVyZ3l4eGVyIiwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzdhMjk3N2RhMGQ5NjI0YWI1YWExMWI4YWE4Zjg1N2RmZGQ4ZjM4MjZlYzIzNjhkNWRmNjA1NWZlOWRjMjIifX19"}]}}},
+        "green": {"SkullOwner":{"Id":"4816d45d-96c3-4e43-9965-e9c17192dad4","Properties":{"textures":[{"Value":"eyJ0aW1lc3RhbXAiOjE0NzM2MzI1MDQ5ODUsInByb2ZpbGVJZCI6ImRlZDdhMmFmMTVlNjRjOWVhYjIzZWFlOTkyMzUzMDY4IiwicHJvZmlsZU5hbWUiOiJFbmVyZ3l4eGVyIiwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzUzODEyNjI1OTYzMDZiMTBkOTJjZmNhODFjMTlmOGQxMWIzZjgwY2U4ZDRlOGRmZGZiODFjZWY2NTNiMDNjZGQifX19"}]}}},
+        "blue": {"SkullOwner":{"Id":"4816d45d-96c3-4e43-9965-e9c17192dad5","Properties":{"textures":[{"Value":"eyJ0aW1lc3RhbXAiOjE0NzM2MzI1NDk2NTMsInByb2ZpbGVJZCI6ImRlZDdhMmFmMTVlNjRjOWVhYjIzZWFlOTkyMzUzMDY4IiwicHJvZmlsZU5hbWUiOiJFbmVyZ3l4eGVyIiwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2Q3YTdmODZiNTE3NmRjN2I5Y2M1NWI3ZDJmOGFkZTI4OGM1NDZlMjVhMjZmZjcxZGFjMzJlYjk3MGVjNjExMyJ9fX0="}]}}},
+        "yellow": {"SkullOwner":{"Id":"4816d45d-96c3-4e43-9965-e9c17192dad6","Properties":{"textures":[{"Value":"eyJ0aW1lc3RhbXAiOjE0NzM2MzI2MjQ0MTMsInByb2ZpbGVJZCI6ImRlZDdhMmFmMTVlNjRjOWVhYjIzZWFlOTkyMzUzMDY4IiwicHJvZmlsZU5hbWUiOiJFbmVyZ3l4eGVyIiwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzQwYjQ1M2E5ZjRhYmEwOWY5YmY3ZjZmZTU4Zjg3MjdlNTQ0ODQ3MThmNTU4MmY3OTY2ZjZiMWVkOWI5ZGMxIn19fQ=="}]}}},
+        "red": {"SkullOwner":{"Id":"4816d45d-96c3-4e43-9965-e9c17192dad7","Properties":{"textures":[{"Value":"eyJ0aW1lc3RhbXAiOjE0NzM2MzI3MzcyMTYsInByb2ZpbGVJZCI6ImRlZDdhMmFmMTVlNjRjOWVhYjIzZWFlOTkyMzUzMDY4IiwicHJvZmlsZU5hbWUiOiJFbmVyZ3l4eGVyIiwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2JhYmJhZTYyN2RjN2MwNmMzMDM5ZWZkN2IyZjVhM2RkODdmODE3NGYzNWY4NzVmNjViYzQ4NDg5ZThmIn19fQ=="}]}}}
+    },
+    "tiers": [
+        {
+            "index": 1,
+            "size": 16,
+            "crafting_item": "minecraft:wooden_pickaxe",
+            "skull": "green"
+        },
+        {
+            "index": 2,
+            "size": 32,
+            "crafting_item": "minecraft:stone_pickaxe",
+            "skull": "yellow"
+        },
+        {
+            "index": 3,
+            "size": 48,
+            "crafting_item": "minecraft:iron_pickaxe",
+            "skull": "purple"
+        },
+        {
+            "index": 4,
+            "size": 64,
+            "crafting_item": "minecraft:golden_pickaxe",
+            "skull": "red"
+        },
+        {
+            "index": 5,
+            "size": 80,
+            "crafting_item": "minecraft:diamond_pickaxe",
+            "skull": "blue"
+        }
+    ],
+    "show_region_switch_messages": true,
+    "add_requires_online": true
+}

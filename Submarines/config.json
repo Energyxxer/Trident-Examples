@@ -1,0 +1,22 @@
+{
+    "__comment": "How fast the submarine moves forward",
+    "submarineSpeed": 3,
+    
+    "__comment": "How much time (in seconds) it takes for the Sonar ability to recharge",
+    "sonarCooldown": 3,
+    
+    "__comment": "The range of effect (in blocks) of the Sonar ability",
+    "sonarRange": 64,
+    
+    "__comment": "How much time (in seconds) the glowing effect from the Sonar should last",
+    "sonarDuration": 15,
+    
+    "__comment": "How much time (in seconds) it takes for the Torpedo ability to recharge",
+    "torpedoCooldown": 10,
+    
+    "__comment": "The speed of the launched torpedoes",
+    "torpedoSpeed": 1,
+    
+    "__comment": "The explosion radius of the torpedoes",
+    "torpedoDamage": 8
+}

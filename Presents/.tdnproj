@@ -1,0 +1,21 @@
+{
+  "default-namespace": "enx_presents",
+  "language-level": 2,
+  "datapack-output": "$PROJECT_DIR$\\out\\Presents",
+  "resources-output": "$PROJECT_DIR$\\out\\Presents-resources.zip",
+  "export-comments": false,
+  "strict-nbt": true,
+  "strict-text-components": true,
+  "game-logger": {
+    "compact": false,
+    "timestamp-enabled": true,
+    "pos-enabled": true,
+    "line-number-enabled": false
+  },
+  "export-gamelog": true,
+  "target-version": [
+    1,
+    15,
+    0
+  ]
+}

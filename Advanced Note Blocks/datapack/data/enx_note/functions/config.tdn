@@ -1,0 +1,47 @@
+@on compile
+@priority 10000
+
+global var EXTEND_OCTAVE_LIMIT = true
+# Set to true if you want to allow notes two octaves
+# outside of the default Minecraft range.
+
+global var FAST_SCROLLING = true
+# Set to true if you want the notes to change as many
+# semitones as you scrolled slots
+
+global var USE_DISTANCE = 64
+# Distance in blocks players can change the settings
+# of advanced note blocks
+
+global var TC_NOTE = text_component<[{"text":"<","color":"dark_gray"},{"text":"Note","color":"green"},">"]>
+global var TC_INSTRUMENT = text_component<[{"text":"<","color":"dark_gray"},{"text":"Instrument","color":"light_purple"},">"]>
+
+global var NoteData = {
+    Instruments: [
+        { name: "Piano",            event: resource<minecraft:block.note_block.harp>},
+        { name: "Bass",             event: resource<minecraft:block.note_block.bass>},
+        { name: "Bass Drum",        event: resource<minecraft:block.note_block.basedrum>},
+        { name: "Snare Drum",       event: resource<minecraft:block.note_block.snare>},
+        { name: "Click",            event: resource<minecraft:block.note_block.hat>},
+        { name: "Pling",            event: resource<minecraft:block.note_block.pling>},
+        { name: "Bell",             event: resource<minecraft:block.note_block.bell>},
+        { name: "Chime",            event: resource<minecraft:block.note_block.chime>},
+        { name: "Flute",            event: resource<minecraft:block.note_block.flute>},
+        { name: "Guitar",           event: resource<minecraft:block.note_block.guitar>},
+        { name: "Xylophone",        event: resource<minecraft:block.note_block.xylophone>},
+        { name: "Iron Xylophone",   event: resource<minecraft:block.note_block.iron_xylophone>},
+        { name: "Cow Bell",         event: resource<minecraft:block.note_block.cow_bell>},
+        { name: "Didgeridoo",       event: resource<minecraft:block.note_block.didgeridoo>},
+        { name: "Bit",              event: resource<minecraft:block.note_block.bit>},
+        { name: "Banjo",            event: resource<minecraft:block.note_block.banjo>}
+    ]
+}
+
+
+
+# == End of settings, please do not change further ==
+
+global var NOTE_RANGE = int_range<0..25>
+do if(EXTEND_OCTAVE_LIMIT) {
+    eval NOTE_RANGE = int_range<-25..50>
+}

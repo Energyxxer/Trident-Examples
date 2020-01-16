@@ -1,0 +1,6 @@
+{
+    "parent": "presents:item/presents/present_inventory",
+    "textures": {
+        "ribbon": "presents:presents/ribbon_green"
+    }
+}

@@ -1,0 +1,13 @@
+$ITEM_TAG: {
+    RegionWhitelist: [Int],
+    PlaceRegionTier: Int
+}
+
+$STORAGE: {
+    "enx_prot:data": {
+        DropperItems: [$ITEM_TAG],
+        Whitelist: [Int],
+        NewWhitelist: [Int],
+        Temp: Int
+    }
+}

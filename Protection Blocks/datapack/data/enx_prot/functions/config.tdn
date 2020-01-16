@@ -1,0 +1,30 @@
+@on compile
+@require enx_util:id_system
+
+global var Config = {
+}
+
+eval Config = JSON.parse(File.in.read("config.json"))
+for(skull in Config.skulls) {
+    eval Config.skulls[skull.key] = new nbt(skull.value)
+}
+for(tier in Config.tiers) {
+    eval tier.skull = Config.skulls[tier.skull]
+}
+
+define objective enx_prot_tier
+
+global var PlayerIdSystem = IdSystemBuilder.create("enx_prot_p_", {
+    id: "enx_prot_pid",
+    link: "enx_prot_pid_lnk"
+})
+
+global var RegionIdSystem = IdSystemBuilder.create("enx_prot_r_", {
+    id: "enx_prot_rid",
+    link: "enx_prot_rid_lnk"
+})
+
+define objective enx_prot_in_rid
+define objective enx_prot_pre_rid
+define objective enx_prot_global
+define objective enx_prot_op

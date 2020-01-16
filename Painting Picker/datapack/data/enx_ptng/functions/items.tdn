@@ -1,0 +1,94 @@
+@on compile
+@require enx_ptng:font
+@require trident-util:predicate
+
+define objective painting_get trigger
+
+for(motive in Motives) {
+    define item ${"painting_" + motive.id.body} painting {
+        var __insert = motive.paintingItem = this
+        default nbt {
+            display: {
+                Name: ${new text_component([{"text":motive.character,"color":"white","italic":false}," Painting"])},
+                Lore: [
+                    ${text_component<[{"text":"Motive","color":"dark_aqua","bold":true,"italic":false},{"text":${": " + motive.id.body},"color":"white","bold":false}]>}
+                ]
+            }
+        }
+        
+        on used as @e[type=minecraft:painting,sort=nearest,tag=!processed,limit=1] at @s function {
+            if entity @s[nbt={Facing:0b}] summon minecraft:painting{Motive:${new tag_string((string)motive.id)},Tags:["processed"],Facing:0b} ~-0.01 ~-0.01 ~
+            if entity @s[nbt={Facing:1b}] summon minecraft:painting{Motive:${new tag_string((string)motive.id)},Tags:["processed"],Facing:1b} ~ ~-0.01 ~-0.01
+            if entity @s[nbt={Facing:2b}] summon minecraft:painting{Motive:${new tag_string((string)motive.id)},Tags:["processed"],Facing:2b} ~ ~-0.01 ~
+            if entity @s[nbt={Facing:3b}] summon minecraft:painting{Motive:${new tag_string((string)motive.id)},Tags:["processed"],Facing:3b} ~ ~-0.01 ~0.01
+            kill @s
+        }
+        
+        function give {
+            give @s $this
+        }
+    }
+}
+
+define item default painting {
+    on dropped function {
+        if predicate ${Predicate.entityProperties().isSneaking(true).export()} function {
+            as @e[type=item,nbt={Age:0s,PickupDelay:40s,Item:{id:"minecraft:painting"}}] if data entity @s Thrower function {
+                tp @s @p
+                set @s.PickupDelay = 0s
+            }
+            tellraw @s {"text":"Click to change your held paintings:","color":"gold","bold":true}
+            var allPaintings = ""
+            var inRow = 0
+            var finalTextComponent = []
+            var clickableRows = [[],[],[],[]]
+            for(motive in Motives) {
+                do if(inRow >= 7) {
+                    eval inRow = 0
+                    for(row in clickableRows) {
+                        eval row.add("\n")
+                        eval finalTextComponent.add(row)
+                    }
+                    eval clickableRows = [[],[],[],[]]
+                }
+                var i = 0
+                for(i = 0; i < clickableRows.length; i++) {
+                    var tc = {"text":motive.paddingCharacter,"hoverEvent":{"action":"show_text","value":[{"text":motive.id.body,"color":"gold"},{"text":"\nClick to replace held","color":"white"}]},"clickEvent":{"action":"run_command","value":"/trigger painting_get set " + motive.index}}
+                    do if(i == 0) {
+                        eval tc.text = motive.topCharacter
+                    }
+                    eval clickableRows[i].add(tc)
+                }
+                eval inRow++
+            }
+            tellraw @s ${new text_component(finalTextComponent)}
+        }
+    }
+    
+    on used function {
+        tag @e[type=minecraft:painting] add processed
+    }
+}
+
+define entity default player {
+    ticking function {
+        scoreboard players enable @s painting_get
+    }
+    
+    ticking if score @s painting_get matches 1..${Motives.length} function {
+        unless entity @s[nbt={SelectedItem:{id:"minecraft:painting"}}] tellraw @s {"text":"You're not holding any paintings!","color":"red"}
+        if entity @s[nbt={SelectedItem:{id:"minecraft:painting"}}] function {
+            set enx_ptng:data~HeldStack = @s.SelectedItem
+            replaceitem entity @s weapon.mainhand air
+            for(motive in Motives) {
+                var slotNBT = motive.paintingItem.getSlotNBT()
+                eval slotNBT.remove("Count")
+                if score @s painting_get matches ${motive.index} data modify storage enx_ptng:data HeldStack merge value $slotNBT
+            }
+            using summon item{Item:{id:"minecraft:stone",Count:1b}} with changed_painting {
+                set @s.Item = enx_ptng:data~HeldStack
+            }
+        }
+        set @s->painting_get = 0
+    }
+}

@@ -1,0 +1,182 @@
+@on compile
+@require enx_sub:torpedo
+
+define objective enx_sub_global
+define objective enx_sub_op
+
+global var SubInstructions = {
+    Y_MOTION: pointer<Y_MOTION->enx_sub_global>,
+    YAW_SPEED: pointer<YAW_SPEED->enx_sub_global>,
+    Z_MOTION: pointer<Z_MOTION->enx_sub_global>,
+    ABILITY: pointer<ABILITY->enx_sub_global>,
+    ANIMATE: pointer<ANIMATE->enx_sub_global>
+}
+
+define item submarine_item minecraft:music_disc_13#1 {
+    default name {"text":"Submarine","italic":false,"color":"yellow"}
+    default nbt {HideFlags:63}
+    default lore [{"text":"Drop on water to spawn","color":"gray","italic":false}]
+}
+
+define entity submarine_seat minecraft:minecart implements torpedo_immune {
+    default name "$$SUBMARINE_SEAT$$"
+    default nbt {
+        Invulnerable:1b
+    }
+    
+    ticking function {
+        set @s.Glowing = 0b
+        set @s[tag=!piloted].Invulnerable = 0b
+        set @s[tag=piloted].Invulnerable = 1b
+        set TEMP->enx_sub_op = 0
+        
+        unless entity @s[tag=piloted] if entity @e[type=player,distance=..5,limit=1] function {
+            set @s.Glowing = 1b
+        }
+        tag @s remove piloted
+    }
+}
+
+define entity default item {
+    ticking if entity @s[nbt={Age:0s,Item:{id:"minecraft:minecart",Count:1b,tag:{display:{Name:"{\"text\":\"$$SUBMARINE_SEAT$$\"}"}}}}] function {
+        kill @e[type=$submarine,limit=1]
+        set @s.Item = ${submarine_item.getSlotNBT()}
+        tag @s add sub_dropped
+    }
+    
+    ticking if entity @s[tag=!sub_dropped,nbt={Item:{tag:${submarine_item.getMatchingNBT()}}}] if predicate $PREDICATE_IN_WATER positioned ~ ~2 ~ if predicate $PREDICATE_IN_WATER positioned ~ ~-2 ~ function {
+        kill @s
+        playsound minecraft:entity.generic.splash master @a ~ ~ ~ 1.0 0.5 0.0
+        particle splash ~ ~2.5 ~ 1.5 0 1.5 1 300
+        function ${submarine.summon}
+    }
+    
+    ticking if entity @s[nbt={Item:{id:"minecraft:nether_star",Count:1b}}] function {
+        using tag sub_crafting @s {
+            as @e[type=item,dx=0,dy=0,dz=0,nbt={Item:{id:"minecraft:redstone_block",Count:2b}}] function {
+                using tag sub_crafting @s {
+                    as @e[type=item,dx=0,dy=0,dz=0,nbt={Item:{id:"minecraft:iron_block",Count:4b}}] function {
+                        kill @e[type=item,tag=sub_crafting,dx=0,dy=0,dz=0]
+                        set @s.Item = ${submarine_item.getSlotNBT()}
+                        tag @s add sub_dropped
+                        playsound block.anvil.use master @a
+                    }
+                }
+            }
+        }
+    }
+}
+
+define entity submarine minecraft:armor_stand implements torpedo_immune {
+    default name "Submarine"
+    default nbt {
+        Invisible:1b,
+        ArmorItems:[{},{},{},${item<music_disc_13#3>.getSlotNBT()}],
+        HandItems:[${item<music_disc_13#4>.getSlotNBT()}],
+        Pose:{Head:[0.0f,0.0f,0.0f],RightArm:[0.0f,0.0f,0.0f]},
+        Silent:1b,
+        DisabledSlots:2039583,
+        Invulnerable:1b
+    }
+    default passengers [
+        $submarine_seat
+    ]
+    ticking function {
+        positioned ~ ~2 ~ if predicate $PREDICATE_IN_WATER set @s[tag=!piloted].Motion[1] = 0.0
+        tag @s remove piloted
+    }
+    
+    function summon {
+        summon $submarine
+    }
+    
+    function anim_step {
+        set @s->enx_sub_anim += 1
+        set @s[scores={enx_sub_anim=5..}]->enx_sub_anim = 0
+        
+        var i = 0
+        for(i = 0; i < 5; i++) {
+            replaceitem entity @s[scores={enx_sub_anim=$i}] weapon.mainhand music_disc_13#${i+4}
+        }
+        at @s positioned ~ ~1.4 ~ particle bubble ^ ^ ^-5 0 0 0 1 18
+        tag @s remove animate
+    }
+    
+    function execute_instructions {
+        tag @s add piloted
+        positioned ~ ~1.2 ~ tag @e[type=$submarine_seat,distance=..2,sort=nearest,limit=1] add piloted
+        set enx_sub:data~this = @s.{}
+        
+        unless score deref ${SubInstructions.Z_MOTION} matches 0 function {
+            using summon minecraft:area_effect_cloud with enx_sub_forward_calc {
+                set @s.Rotation[0] = enx_sub:data~this.Rotation[0]
+                at @s tp @s ^ ^ ^1
+                set FORWARD_X -> enx_sub_op  =  @s.Pos[0] * 100
+                set FORWARD_Z -> enx_sub_op  =  @s.Pos[2] * 100
+                set TEMP      -> enx_sub_op  =  enx_sub:data~this.Pos[0] * 100
+                set FORWARD_X -> enx_sub_op -= TEMP->enx_sub_op
+                set TEMP      -> enx_sub_op  =  enx_sub:data~this.Pos[2] * 100
+                set FORWARD_Z -> enx_sub_op -= TEMP->enx_sub_op
+                
+                set FORWARD_X -> enx_sub_op *= ${SubInstructions.Z_MOTION}
+                set FORWARD_Z -> enx_sub_op *= ${SubInstructions.Z_MOTION}
+                
+                set enx_sub:data~this.Motion[0] * ${0.0015 * Config.submarineSpeed} = FORWARD_X->enx_sub_op
+                set enx_sub:data~this.Motion[2] * ${0.0015 * Config.submarineSpeed} = FORWARD_Z->enx_sub_op
+                
+                kill @s
+            }
+        }
+        
+        set enx_sub:data~this.Motion[1] = 0.0d
+        set enx_sub:data~this.Motion[1] * ${0.1 * Config.submarineSpeed} = ${SubInstructions.Y_MOTION}
+        
+        set enx_sub:data~this.Pose.Head = [0.0f,0.0f,0.0f]
+        unless score deref ${SubInstructions.YAW_SPEED} matches 0 function {
+            set TEMP->enx_sub_op = enx_sub:data~this.Rotation[0]
+            set TEMP->enx_sub_op += ${SubInstructions.YAW_SPEED}
+            set enx_sub:data~this.Rotation[0] = TEMP->enx_sub_op
+            set enx_sub:data~this.Pose.Head[2] = 3f
+            if score deref ${SubInstructions.YAW_SPEED} matches 1.. set enx_sub:data~this.Pose.Head[2] = -3f
+            positioned ~ ~1 ~ set @e[type=$submarine_seat,distance=..2,sort=nearest,limit=1].Rotation = enx_sub:data~this.Rotation
+        }
+        
+        if score deref ${SubInstructions.ABILITY} matches 1 function sonar {
+            positioned ~ ~1 ~ effect give @e[type=!$submarine,distance=1..${(real)Config.sonarRange}] glowing ${Config.sonarDuration} 0 true
+            particle minecraft:block water ~ ~ ~ 5 5 5 2 100 force @a
+            playsound minecraft:entity.elder_guardian.curse master @a ~ ~ ~ 1.0 2.0 0.0
+            playsound minecraft:entity.experience_orb.pickup master @a ~ ~ ~ 1.0 0.75 0.0
+        }
+        
+        if score deref ${SubInstructions.ABILITY} matches 2 function launch_torpedo {
+            particle large_smoke ~ ~ ~ 2 2 2 0.25 5
+            playsound minecraft:entity.ghast.shoot master @a ~ ~ ~ 2.0 0.5 0.0
+            playsound minecraft:entity.generic.splash master @a ~ ~ ~ 2.0 0.5 0.0
+            positioned ~ ~1.2 ~ summon $torpedo{Tags:["new"]} ^-1 ^ ^1
+            positioned ~ ~1.2 ~ summon $torpedo{Tags:["new"]} ^1 ^ ^1
+            rotated as @s as @e[type=$torpedo,tag=new] positioned as @s function {
+                tp @s ~ ~ ~ ~ ~
+                tag @s remove new
+            }
+        }
+        
+        positioned ~ ~1.5 ~ unless predicate $PREDICATE_IN_WATER data remove storage enx_sub:data this.Motion
+        
+        data modify entity @s {} merge from storage enx_sub:data this
+        
+        if score deref ${SubInstructions.ANIMATE} matches 1 function {
+            tag @s add animate
+        }
+    }
+}
+
+define function propeller_anim {
+    @tag load
+    schedule function / 2t
+    as @e[type=$submarine,tag=animate] function ${submarine.anim_step}
+}
+
+define function global_init {
+    @tag load
+    set TURN_SPEED->enx_sub_global = ${Config.submarineSpeed}
+}

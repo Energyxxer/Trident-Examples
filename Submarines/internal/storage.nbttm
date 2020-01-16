@@ -1,0 +1,6 @@
+$STORAGE: {
+    "enx_sub:data": {
+        this: $ENTITY (protocol),
+        player: $ENTITY (protocol)
+    }
+}

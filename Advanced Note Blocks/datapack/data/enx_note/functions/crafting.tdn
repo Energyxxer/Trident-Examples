@@ -1,0 +1,12 @@
+@tag tick
+
+var itemNBT = noteblock_spawn_item.getSlotNBT()
+eval itemNBT.remove("Count")
+
+var mergeNBT = nbt<{CustomName:"\"Advanced Note Block\"",CustomNameVisible:1b,Glowing:1b,Item:$itemNBT}>
+
+as @e[type=item,nbt={OnGround:1b,Item:{id:"minecraft:note_block"}}] at @s if block ~ ~-1 ~ minecraft:crafting_table function transform {
+    playsound minecraft:block.note_block.chime master @a ~ ~ ~ 1.0 1.0 0.0
+    particle dragon_breath ~ ~ ~ 0 0 0 1 5
+    data merge entity @s $mergeNBT
+}

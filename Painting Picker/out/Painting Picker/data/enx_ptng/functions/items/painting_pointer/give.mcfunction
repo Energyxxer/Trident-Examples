@@ -1,0 +1,1 @@
+give @s minecraft:painting{TridentCustomItem:-712381553,display:{Name:"[{\"text\":\"\\uFC18\",\"color\":\"white\",\"italic\":false},\" Painting\"]",Lore:["[{\"text\":\"Motive\",\"color\":\"dark_aqua\",\"bold\":true,\"italic\":false},{\"text\":\": pointer\",\"color\":\"white\",\"bold\":false}]"]}}

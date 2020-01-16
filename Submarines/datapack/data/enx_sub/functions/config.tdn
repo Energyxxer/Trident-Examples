@@ -1,0 +1,22 @@
+@on compile
+@priority 10000
+@require trident-util:predicate
+
+# Will be overwritten by config.json at the project root
+# This is here purely for automatic code completion
+global var Config = {
+    submarineSpeed: 3,
+    sonarCooldown: 25,
+    sonarRange: 64,
+    sonarDuration: 15,
+    torpedoCooldown: 30,
+    torpedoSpeed: 1,
+    torpedoDamage: 8,
+    
+    greeting: true,
+    greetingTimes: 5
+}
+
+eval Config = JSON.parse(File.in.read("config.json"))
+
+global var PREDICATE_IN_WATER = Predicate.locationCheck().fluid(Shared.Fluid().tag(resource<#minecraft:water>)).export()

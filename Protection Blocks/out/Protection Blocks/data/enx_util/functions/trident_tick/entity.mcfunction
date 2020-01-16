@@ -1,0 +1,6 @@
+execute if entity @s[tag=trident-component.enx_util.enx_prot_p_id_holder] unless score @s enx_prot_pid matches ..2147483647 run function enx_util:id_system/enx_prot_p_id_holder/set_id
+execute if entity @s[tag=trident-component.enx_util.enx_prot_p_kill_on_link_broken] if score @s enx_prot_pid_lnk matches ..2147483647 run function enx_util:id_system/enx_prot_p_kill_on_link_broken/_anonymous0
+execute if entity @s[tag=trident-component.enx_util.enx_prot_p_datakill_on_link_broken] if score @s enx_prot_pid_lnk matches ..2147483647 run function enx_util:id_system/enx_prot_p_datakill_on_link_broken/_anonymous1
+execute if entity @s[tag=trident-component.enx_util.enx_prot_r_id_holder] unless score @s enx_prot_rid matches ..2147483647 run function enx_util:id_system/enx_prot_r_id_holder/set_id
+execute if entity @s[tag=trident-component.enx_util.enx_prot_r_kill_on_link_broken] if score @s enx_prot_rid_lnk matches ..2147483647 run function enx_util:id_system/enx_prot_r_kill_on_link_broken/_anonymous2
+execute if entity @s[tag=trident-component.enx_util.enx_prot_r_datakill_on_link_broken] if score @s enx_prot_rid_lnk matches ..2147483647 run function enx_util:id_system/enx_prot_r_datakill_on_link_broken/_anonymous3

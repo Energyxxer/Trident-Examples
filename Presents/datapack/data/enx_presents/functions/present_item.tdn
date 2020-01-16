@@ -1,0 +1,88 @@
+@on compile
+
+var colorIndices = [16777215, 14188339, 11685080, 6724056, 15066419, 8375321, 15892389, 5000268, 10066329, 5013401, 8339378, 3361970, 6704179, 6717235, 10040115, 1644825]
+var colorNames = "White,Orange,Magenta,Light Blue,Yellow,Lime,Pink,Gray,Light Gray,Cyan,Purple,Blue,Brown,Dark Green,Red,Black".split(",")
+
+define item present_item minecraft:leather_boots {
+    default name "Present"
+    
+    var construct = function(boxColor, ribbonColor) {
+        return item<$present_item{
+            CustomModelData:${new tag_int(ribbonColor+1)},
+            display:{
+                color:${new tag_int(colorIndices[boxColor])},
+                Name:${text_component<{"text":${colorNames[boxColor] + " Present"},"italic":false}>},
+                Lore:[
+                    ${text_component<{"text":${"with " + colorNames[ribbonColor] + " ribbon"},"color":"gray","italic":false}>},
+                    "\"\"",
+                    ${text_component<[{"text":"Use: ","color":"dark_aqua","italic":false},{"text":"Drop to place down","color":"white"}]>}
+                ]
+            },
+            HideFlags:63,
+            Present: {
+                BoxColor: ${new tag_int(colorIndices[boxColor])},
+                RibbonColor: ${new tag_int(colorIndices[ribbonColor])}
+            }
+        }>
+    }
+    
+    var data_setup = function() {
+        tag @s add crafted
+        
+        data merge entity @s {
+            Item: {
+                id: "minecraft:leather_boots",
+                tag: ${this.getMatchingNBT().merge(nbt<{
+                    display:{
+                        Lore:[
+                            "\"\"",
+                            "\"\"",
+                            ${text_component<[{"text":"Use: ","color":"dark_aqua","italic":false},{"text":"Drop to place down","color":"white"}]>}
+                        ]
+                    },
+                    HideFlags:63,
+                    Present: {
+                    }
+                }>)}
+            }
+        }
+        
+        function set_box_data {
+            var i = 0
+            for(i = 0; i < 16; i++) {
+                if score FIRST enx_psnt_dye matches $i function {
+                    set @s.Item.tag.display.color = ${colorIndices[i]}
+                    set @s.Item.tag.display.Name = ${new tag_string((string) text_component<{"text":${colorNames[i] + " Present"},"italic":false}>)}
+                    set @s.Item.tag.Present.BoxColor = ${colorIndices[i]}
+                }
+            }
+        }
+        
+        function set_ribbon_data {
+            var i = 0
+            for(i = 0; i < 16; i++) {
+                if score SECOND enx_psnt_dye matches $i function {
+                    set @s.Item.tag.display.Lore[0] = ${new tag_string((string) text_component<{"text":${"with " + colorNames[i] + " ribbon"},"color":"gray","italic":false}>)}
+                    set @s.Item.tag.Present.RibbonColor = ${colorIndices[i]}
+                }
+            }
+            
+            set SECOND->enx_psnt_dye += 1
+            set @s.Item.tag.CustomModelData = SECOND->enx_psnt_dye
+        }
+        
+    }
+}
+
+define entity default player {
+    ticking function present_boots_test {
+        set enx_presents:data~player = @s.{}
+        if data storage enx_presents:data player.Inventory[{Slot:100b,tag:${present_item.getMatchingNBT()}}] function unequip {
+            replaceitem entity @s armor.feet air
+            using summon item{Item:{id:"minecraft:stone",Count:1b}} ~ ~ ~ with replacement_present {
+                set @s.Item = enx_presents:data~player.Inventory[{Slot:100b,tag:${present_item.getMatchingNBT()}}]
+            }
+        }
+        data remove storage enx_presents:data player
+    }
+}
